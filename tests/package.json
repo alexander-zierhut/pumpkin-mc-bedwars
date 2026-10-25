@@ -1,6 +1,7 @@
 {
   "name": "bedwars-lan-tests",
   "private": true,
+  "license": "Apache-2.0",
   "description": "End-to-end tests: 1.8.9 mineflayer bots play against throwaway copies of the BedWars server",
   "scripts": {
     "test": "node run.js"

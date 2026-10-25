@@ -33,6 +33,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 COPY --from=pumpkin /pumpkin /usr/local/bin/pumpkin
 COPY --from=plugin /opt/bedwars /opt/bedwars
 COPY docker/entrypoint.sh /usr/local/bin/bedwars-entrypoint
+COPY LICENSE /opt/bedwars/LICENSE
+COPY vendor/Pumpkin/LICENSE /opt/bedwars/LICENSE-pumpkin
 WORKDIR /srv
 VOLUME /srv
 EXPOSE 25565 25575

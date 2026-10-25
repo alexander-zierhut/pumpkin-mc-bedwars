@@ -14,8 +14,6 @@ agents.
   PRs are only in `bedwars-pvp-fixes` (#3995, #4149, #3351, #4118, #3307, part of #3432), without own PRs.
 - Upstreaming: the Pumpkin maintainers know about the fork and pick from its PRs. Real upstream PRs are opened by
   the owner, never by an agent (Pumpkin's AGENTS.md), with a real-client capture and the AI disclosure line.
-- The owner's LAN server (container `bedwars-pumpkin`, port 25565) still runs from the old local `deploy/` folder
-  (not in git) with fork tip `6e06cc478` from before the rebase. Redeploying it kicks players: ask first.
 - Tests: the full bot suite passed on the combined branch before the rebase (18 of 18 run alone; with 3 specs in
   parallel the bow check "sprint p0 #1" sometimes fails, a known flake). Unit tests of all crates pass on
   `bedwars-pvp-fixes`.
@@ -34,6 +32,11 @@ agents.
   `reference/vanilla-26.3/src` and never committed. 1.8 behaviour is checked against a real 1.8.9 server
   (`tests/compare/`, the Mojang jar is downloaded, not committed).
 
+- Licenses: this repository is Apache-2.0 (`LICENSE`), the fork GPL-3.0 like Pumpkin. The image and the release
+  archive ship both (`/opt/bedwars/LICENSE`, `LICENSE-pumpkin`).
+- CI builds on pushes to `main` except when only Markdown, `docs/`, `reports/`, `tests/` or `tools/fork/` changed
+  (`paths-ignore` in `.github/workflows/build.yml`). Run it by hand with `gh workflow run build.yml` if needed.
+
 ## Where things are
 
 | What | Where |
@@ -44,7 +47,7 @@ agents.
 | Bow comparison with 1.8.9 | `reports/bow-1.8.9-vs-pumpkin.md` |
 | Fork branches, PR descriptions and the scripts that build, check and open them | `tools/fork/` |
 | Player-visible texts (English): messages, item and shop names, team names | `plugin/src/text.ts`, `config/shop.yml`, `config/arena-*.yml` |
-| Local only (gitignored): the extra maps `maps/rewi_*`, `deploy/`, `work/`, `reference/`, `config/ops.json` | |
+| Local only (gitignored): the extra maps `maps/rewi_*`, `work/`, `reference/`, `config/ops.json` | |
 
 The extra maps Mushroom and Mansion are not ours to publish. With them in `maps/`, `tools/apply.sh` installs their
 arenas from `config/arena-*.yml` automatically; without them the map specs 02 and 03 are skipped.
@@ -61,8 +64,6 @@ arenas from `config/arena-*.yml` automatically; without them the map specs 02 an
 
 ## Open
 
-- Deploy the current `bedwars-pvp-fixes` to the LAN server (owner's decision, kicks players).
 - The bow flake "sprint p0 #1" under parallel load (`PUMPKIN-FINDINGS.md`, harness notes).
 - Real-client captures for the upstream PRs the maintainers pick.
 - Idea, not started: a differential proxy that mirrors a real client to vanilla and Pumpkin and diffs the packets.
-- No license file yet in either repository's own code (the fork is GPL-3.0 like Pumpkin).

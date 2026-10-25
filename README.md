@@ -11,6 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-plugin-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](plugin/src)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-component-654ff0?style=for-the-badge&logo=webassembly&logoColor=white)](plugin/build.mjs)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ed?style=for-the-badge&logo=docker&logoColor=white)](#start-a-server)
+[![License Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-6e7781?style=for-the-badge)](LICENSE)
 
 <img src="docs/images/rush.png" alt="The Rush map: two team islands with their beds and a middle island, rendered from the world files" width="100%">
 
@@ -243,6 +244,12 @@ tests run with `cd plugin && npm test`.
 Most of the code here and in the fork was written with an AI coding agent (Claude Code) over about a week. Each change
 was checked against the decompiled vanilla 26.3 server, the combat against a real 1.8.9 server, and everything with
 the bot test suite and play tests with real clients.
+
+## License
+
+This repository (plugin, tests, tools, the Rush map) is under the [Apache License 2.0](LICENSE). The server binary
+in the image and the release is built from the [Pumpkin fork](https://github.com/alexander-zierhut/pumpkin-mc-pvp),
+which is GPL-3.0 like Pumpkin; both licenses are included.
 
 ## Contact
 

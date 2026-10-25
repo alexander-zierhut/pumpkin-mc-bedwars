@@ -24,17 +24,18 @@ Keep those files current when the state changes, so the next session does not st
   apply in the fork; its rules for the code itself do.
 - Do not enable the fork's GitHub Actions (its reviewer workflow mentions Pumpkin maintainers).
 - Before fixing a Pumpkin bug, search the open upstream PRs and issues for the same fix.
-- The owner's LAN server (container `bedwars-pumpkin`, port 25565, from the local `deploy/` folder) has players on
-  it. Do not restart or redeploy it without asking. The dev server of `./bedwars.sh` is a different container
-  (`pumpkin-mc-bedwars`, folder `./data`) but also defaults to port 25565: while the LAN server runs, use
-  `BEDWARS_PORT=25566 ./bedwars.sh ...`. The bot suite starts throwaway `pktest-*` containers on free ports.
+- `./bedwars.sh` runs the dev server as container `pumpkin-mc-bedwars` on port 25565 (folder `./data`); use
+  `BEDWARS_PORT=25566` if that port is taken. The bot suite starts throwaway `pktest-*` containers on free ports.
 - The machine is shared: server builds (`build/build-pumpkin.sh`, `./bedwars.sh`) with at most 6 cores, cargo
   checks (`build/cargo.sh`, `tools/fork/check.sh`) with 12, one Rust job at a time (`build/.build.lock`), bot specs
   at most 3 in parallel.
-- Only the Rush map is ours to publish. `maps/rewi_*`, `reference/` (decompiled vanilla), `deploy/`, `work/` and
+- Only the Rush map is ours to publish. `maps/rewi_*`, `reference/` (decompiled vanilla), `work/` and
   `config/ops.json` stay local and are gitignored. Never commit Mojang code or jars.
-- Every push to `main` builds the Docker image and the release (about 17 minutes, including the Rust build). A new
-  push cancels a running build (`cancel-in-progress`), so batch changes into one push.
+- A push to `main` builds the Docker image and the release (a few minutes when the fork is unchanged, about 17 with
+  a Rust rebuild); pushes that only touch Markdown, `docs/`, `reports/`, `tests/` or `tools/fork/` are skipped. A
+  new push cancels a running build (`cancel-in-progress`), so batch changes into one push.
+- Licenses: this repository Apache-2.0, `vendor/Pumpkin` GPL-3.0. Code copied from Pumpkin into the plugin would
+  have to stay GPL, so keep the two apart.
 - Local branches in `vendor/Pumpkin` that are not in `tools/fork/units.json` (`backup/before-restructure`, `clean`,
   `clean1`, `lan-bedwars`) are old local snapshots. Do not push them.
 - Texts (docs, README, PR descriptions): no em dashes, little bold. Public texts are balanced and appreciative of

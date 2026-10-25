@@ -1,4 +1,4 @@
-# only vendor/Pumpkin, plugin, config, maps, tools and docker go into the image build
+# only vendor/Pumpkin, plugin, config, maps, tools, docker and LICENSE go into the image build
 *
 !vendor/Pumpkin
 vendor/Pumpkin/target
@@ -11,3 +11,4 @@ plugin/.wit-build
 !maps
 !tools
 !docker
+!LICENSE

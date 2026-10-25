@@ -6,6 +6,13 @@ name: Build server
 on:
   push:
     branches: [main]
+    # docs, reports, tests and fork tooling do not go into the image
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'reports/**'
+      - 'tests/**'
+      - 'tools/fork/**'
   workflow_dispatch:
 
 permissions:

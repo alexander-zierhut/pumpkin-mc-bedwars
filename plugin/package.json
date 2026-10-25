@@ -2,6 +2,7 @@
   "name": "lan-bedwars-pumpkin",
   "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "description": "Rewinside-style BedWars for Pumpkin, written in TypeScript (Wasm component)",
   "scripts": {
