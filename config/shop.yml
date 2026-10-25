@@ -1,0 +1,270 @@
+# Rewinside-style BedWars shop (Bronze / Silber / Gold).
+# Prices follow the Rewinside clone (github.com/Marfien/rewi-bw).
+# Left click: buy once | Shift + click: buy as many as you can afford (max. 1 stack)
+# Hover + number key 1-9: buy straight into that hotbar slot (LanBedWars plugin)
+# The main page shows the categories in the top row and the Schnellkauf items below them.
+# Internal resource keys: bronze, iron (shown as "Silber"), gold
+
+data:
+- stack:
+    type: red_sandstone
+    display-name: "§eBlöcke"
+  items:
+   - price: 1 of bronze
+     stack: "red_sandstone;2;§fSandstein"
+   - price: 7 of bronze
+     stack: "end_stone;1;§fEndstein"
+   - price: 3 of iron
+     stack: "iron_block;1;§fEisenblock"
+   - price: 4 of bronze
+     properties: "applycolorbyteam"
+     stack: "glass;1;§fGlas"
+   - price: 16 of bronze
+     stack: "glowstone;4;§fGlowstone"
+
+- stack:
+    type: chainmail_chestplate
+    display-name: "§eRüstung"
+  items:
+   - price: 1 of bronze
+     properties: "applycolorbyteam"
+     stack: "leather_helmet;1;§fLederhelm"
+   - price: 1 of bronze
+     properties: "applycolorbyteam"
+     stack: "leather_leggings;1;§fLederhose"
+   - price: 1 of bronze
+     properties: "applycolorbyteam"
+     stack: "leather_boots;1;§fLederschuhe"
+   - price: 1 of iron
+     stack: "chainmail_chestplate;1;§fBrustplatte I"
+   - price: 3 of iron
+     stack:
+      type: chainmail_chestplate
+      display-name: "§fBrustplatte II"
+      enchants:
+        protection: 1
+   - price: 7 of iron
+     stack:
+      type: chainmail_chestplate
+      display-name: "§fBrustplatte III"
+      enchants:
+        protection: 2
+   - price: 11 of iron
+     stack:
+      type: chainmail_chestplate
+      display-name: "§fBrustplatte IV"
+      enchants:
+        protection: 2
+        thorns: 1
+
+- stack:
+    type: iron_pickaxe
+    display-name: "§eSpitzhacken"
+  items:
+   - price: 7 of bronze
+     stack: "wooden_pickaxe;1;§fSpitzhacke I"
+   - price: 2 of iron
+     stack: "stone_pickaxe;1;§fSpitzhacke II"
+   - price: 1 of gold
+     stack: "iron_pickaxe;1;§fSpitzhacke III"
+
+- stack:
+    type: wooden_sword
+    display-name: "§eSchwerter"
+  items:
+   - price: 10 of bronze
+     stack:
+      type: stick
+      display-name: "§fKnüppel"
+      enchants:
+        knockback: 1
+   - price: 1 of iron
+     stack: "wooden_sword;1;§fSchwert I"
+   - price: 3 of iron
+     stack:
+      type: wooden_sword
+      display-name: "§fSchwert II"
+      enchants:
+        sharpness: 1
+   - price: 5 of iron
+     stack:
+      type: wooden_sword
+      display-name: "§fSchwert III"
+      enchants:
+        sharpness: 2
+   - price: 5 of gold
+     stack:
+      type: iron_sword
+      display-name: "§fSchwert IV"
+      enchants:
+        sharpness: 1
+        knockback: 1
+
+- stack:
+    type: bow
+    display-name: "§eBögen"
+  items:
+   - price: 3 of gold
+     stack:
+      type: bow
+      display-name: "§fBogen I"
+      enchants:
+        infinity: 1
+   - price: 7 of gold
+     stack:
+      type: bow
+      display-name: "§fBogen II"
+      enchants:
+        infinity: 1
+        power: 1
+   - price: 11 of gold
+     stack:
+      type: bow
+      display-name: "§fBogen III"
+      enchants:
+        infinity: 1
+        power: 2
+        punch: 1
+   - price: 1 of gold
+     stack: "arrow;1;§fPfeil"
+
+- stack:
+    type: cake
+    display-name: "§eEssen"
+  items:
+   - price: 2 of bronze
+     stack: "apple;1;§fApfel"
+   - price: 4 of bronze
+     stack: "cooked_beef;1;§fSteak"
+   - price: 1 of iron
+     stack: "cake;1;§fKuchen"
+   - price: 2 of gold
+     stack: "golden_apple;1;§6Goldapfel"
+
+- stack:
+    type: potion
+    display-name: "§eTränke"
+    potion-type: strength
+  items:
+   - price: 5 of iron
+     stack:
+      type: potion
+      display-name: "§dHeilung I"
+      potion-type: healing
+   - price: 7 of iron
+     stack:
+      type: potion
+      display-name: "§dHeilung II"
+      potion-type: strong_healing
+   - price: 10 of iron
+     stack:
+      type: potion
+      display-name: "§aJumpboost"
+      potion-type: leaping
+   - price: 5 of gold
+     stack:
+      type: potion
+      display-name: "§cStärke"
+      potion-type: strength
+
+- stack:
+    type: emerald
+    display-name: "§eExtras"
+  items:
+   - price: 2 of iron
+     stack: "chest;1;§fKiste"
+   - price: 1 of gold
+     stack:
+      type: ender_chest
+      display-name: "§5Teamkiste"
+      lore:
+       - "§7Gemeinsames Inventar für dein Team"
+   - price: 4 of bronze
+     stack: "ladder;1;§fLeiter"
+   - price: 20 of bronze
+     stack: "cobweb;1;§fSpinnennetz"
+   - price: 10 of iron
+     stack:
+      type: firework_rocket
+      display-name: "§bTeleporter"
+      lore:
+       - "§7Kurz stillstehen, dann schießt"
+       - "§7dich die Rakete hoch und zurück"
+       - "§7zu deinem Spawn."
+   - price: 2 of gold
+     stack:
+      type: chicken_spawn_egg
+      display-name: "§fFallschirm"
+      lore:
+       - "§7In der Luft benutzen, um"
+       - "§7in Blickrichtung zu gleiten."
+   - price: 12 of iron
+     stack:
+      type: armor_stand
+      display-name: "§eMobiler Shop"
+      lore:
+       - "§7Stellt für 20 Sekunden"
+       - "§7einen Shop auf."
+   - price: 5 of gold
+     properties:
+      - name: "AutoIgniteableTnt"
+        explosion-time: 4
+        damage-placer: false
+     stack: "tnt;1;§cTNT"
+   - price: 3 of gold
+     properties:
+      - name: "rescueplatform"
+        delay: 5
+     stack:
+      type: nether_star
+      display-name: "§bRettungsplattform"
+      lore:
+       - "§7Rettet dich vor dem Void"
+   - price: 14 of gold
+     stack: "ender_pearl;1;§fEnderperle"
+
+# Schnellkauf: shown directly on the main page, below the category row
+- price: 1 of bronze
+  linebreak: before
+  stack: "red_sandstone;2;§fSandstein"
+- price: 7 of bronze
+  stack: "end_stone;1;§fEndstein"
+- price: 4 of bronze
+  properties: "applycolorbyteam"
+  stack: "glass;1;§fGlas"
+- price: 10 of bronze
+  stack:
+   type: stick
+   display-name: "§fKnüppel"
+   enchants:
+     knockback: 1
+- price: 1 of iron
+  stack: "wooden_sword;1;§fSchwert I"
+- price: 7 of bronze
+  stack: "wooden_pickaxe;1;§fSpitzhacke I"
+- price: 1 of iron
+  stack: "chainmail_chestplate;1;§fBrustplatte I"
+- price: 3 of gold
+  stack:
+   type: bow
+   display-name: "§fBogen I"
+   enchants:
+     infinity: 1
+- price: 1 of gold
+  stack: "arrow;1;§fPfeil"
+- price: 2 of gold
+  stack: "golden_apple;1;§6Goldapfel"
+- price: 5 of iron
+  stack:
+   type: potion
+   display-name: "§dHeilung I"
+   potion-type: healing
+- price: 3 of gold
+  properties:
+   - name: "rescueplatform"
+     delay: 5
+  stack:
+   type: nether_star
+   display-name: "§bRettungsplattform"
+   lore:
+    - "§7Rettet dich vor dem Void"

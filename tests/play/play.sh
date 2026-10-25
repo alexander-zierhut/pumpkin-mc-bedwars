@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# usage: ./play.sh <httpPort> state | do '<json>' | <action> key=value ...
+exec node "$(dirname "$0")/play.js" "$@"

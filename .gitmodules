@@ -1,0 +1,5 @@
+[submodule "vendor/Pumpkin"]
+	path = vendor/Pumpkin
+	url = https://github.com/alexander-zierhut/pumpkin-mc-pvp.git
+	branch = bedwars-pvp-fixes
+	shallow = true

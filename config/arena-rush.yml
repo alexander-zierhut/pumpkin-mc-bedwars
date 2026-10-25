@@ -1,0 +1,77 @@
+name: Rush
+pauseCountdown: 3600
+gameTime: 3600
+world: bedwars
+pos1: -95;70;-60;0.0;0.0
+pos2: 95;220;60;0.0;0.0
+specSpawn: 0.5;140;0.5;0.0;90.0
+lobbySpawn: 0.5;131;120.5;180.0;0.0
+lobbySpawnWorld: bedwars
+minPlayers: 2
+postGameWaiting: 5
+teams:
+  Rot:
+    isNewColor: true
+    color: RED
+    maxPlayers: 4
+    bed: 72;105;-1;0.0;0.0
+    spawn: 63.5;101;0.0;90.0;0.0
+    actualName: Rot
+  Blau:
+    isNewColor: true
+    color: BLUE
+    maxPlayers: 4
+    bed: -72;105;0;0.0;0.0
+    spawn: -62.5;101;-0.0;-90.0;0.0
+    actualName: Blau
+spawners:
+- location: 65.5;101.0;0.0;0.0;0.0
+  type: bronze
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: Rot
+  maxSpawnedResources: -1
+- location: 67.5;101.0;-37.5;0.0;0.0
+  type: iron
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+- location: -64.5;101.0;-0.0;0.0;0.0
+  type: bronze
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: Blau
+  maxSpawnedResources: -1
+- location: -66.5;101.0;37.5;0.0;0.0
+  type: iron
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+- location: 0.5;101.0;0.5;0.0;0.0
+  type: gold
+  customName: null
+  startLevel: 4.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+stores:
+- loc: 61.5;101.0;-9.5;90.0;0.0
+  parent: 'true'
+  type: VILLAGER
+  name: '§eShop'
+  isBaby: 'false'
+- loc: -60.5;101.0;9.5;-90.0;0.0
+  parent: 'true'
+  type: VILLAGER
+  name: '§eShop'
+  isBaby: 'false'
+arenaTime: DAY
+arenaWeather: CLEAR
+lobbyBossBarColor: default
+gameBossBarColor: default

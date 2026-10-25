@@ -1,0 +1,133 @@
+declare module 'pumpkin:plugin/game-rules@0.1.0' {
+  /**
+   * # Variants
+   * 
+   * ## `"advance-time"`
+   * 
+   * ## `"advance-weather"`
+   * 
+   * ## `"allow-entering-nether-using-portals"`
+   * 
+   * ## `"block-drops"`
+   * 
+   * ## `"block-explosion-drop-decay"`
+   * 
+   * ## `"command-block-output"`
+   * 
+   * ## `"command-blocks-work"`
+   * 
+   * ## `"drowning-damage"`
+   * 
+   * ## `"elytra-movement-check"`
+   * 
+   * ## `"ender-pearls-vanish-on-death"`
+   * 
+   * ## `"entity-drops"`
+   * 
+   * ## `"fall-damage"`
+   * 
+   * ## `"fire-damage"`
+   * 
+   * ## `"fire-spread-radius-around-player"`
+   * 
+   * ## `"forgive-dead-players"`
+   * 
+   * ## `"freeze-damage"`
+   * 
+   * ## `"global-sound-events"`
+   * 
+   * ## `"immediate-respawn"`
+   * 
+   * ## `"keep-inventory"`
+   * 
+   * ## `"lava-source-conversion"`
+   * 
+   * ## `"limited-crafting"`
+   * 
+   * ## `"locator-bar"`
+   * 
+   * ## `"log-admin-commands"`
+   * 
+   * ## `"max-block-modifications"`
+   * 
+   * ## `"max-command-forks"`
+   * 
+   * ## `"max-command-sequence-length"`
+   * 
+   * ## `"max-entity-cramming"`
+   * 
+   * ## `"max-minecart-speed"`
+   * 
+   * ## `"max-snow-accumulation-height"`
+   * 
+   * ## `"mob-drops"`
+   * 
+   * ## `"mob-explosion-drop-decay"`
+   * 
+   * ## `"mob-griefing"`
+   * 
+   * ## `"natural-health-regeneration"`
+   * 
+   * ## `"player-movement-check"`
+   * 
+   * ## `"players-nether-portal-creative-delay"`
+   * 
+   * ## `"players-nether-portal-default-delay"`
+   * 
+   * ## `"players-sleeping-percentage"`
+   * 
+   * ## `"projectiles-can-break-blocks"`
+   * 
+   * ## `"pvp"`
+   * 
+   * ## `"raids"`
+   * 
+   * ## `"random-tick-speed"`
+   * 
+   * ## `"reduced-debug-info"`
+   * 
+   * ## `"respawn-radius"`
+   * 
+   * ## `"send-command-feedback"`
+   * 
+   * ## `"show-advancement-messages"`
+   * 
+   * ## `"show-death-messages"`
+   * 
+   * ## `"spawn-mobs"`
+   * 
+   * ## `"spawn-monsters"`
+   * 
+   * ## `"spawn-patrols"`
+   * 
+   * ## `"spawn-phantoms"`
+   * 
+   * ## `"spawn-wandering-traders"`
+   * 
+   * ## `"spawn-wardens"`
+   * 
+   * ## `"spawner-blocks-work"`
+   * 
+   * ## `"spectators-generate-chunks"`
+   * 
+   * ## `"spread-vines"`
+   * 
+   * ## `"tnt-explodes"`
+   * 
+   * ## `"tnt-explosion-drop-decay"`
+   * 
+   * ## `"universal-anger"`
+   * 
+   * ## `"water-source-conversion"`
+   */
+  export type GameRule = 'advance-time' | 'advance-weather' | 'allow-entering-nether-using-portals' | 'block-drops' | 'block-explosion-drop-decay' | 'command-block-output' | 'command-blocks-work' | 'drowning-damage' | 'elytra-movement-check' | 'ender-pearls-vanish-on-death' | 'entity-drops' | 'fall-damage' | 'fire-damage' | 'fire-spread-radius-around-player' | 'forgive-dead-players' | 'freeze-damage' | 'global-sound-events' | 'immediate-respawn' | 'keep-inventory' | 'lava-source-conversion' | 'limited-crafting' | 'locator-bar' | 'log-admin-commands' | 'max-block-modifications' | 'max-command-forks' | 'max-command-sequence-length' | 'max-entity-cramming' | 'max-minecart-speed' | 'max-snow-accumulation-height' | 'mob-drops' | 'mob-explosion-drop-decay' | 'mob-griefing' | 'natural-health-regeneration' | 'player-movement-check' | 'players-nether-portal-creative-delay' | 'players-nether-portal-default-delay' | 'players-sleeping-percentage' | 'projectiles-can-break-blocks' | 'pvp' | 'raids' | 'random-tick-speed' | 'reduced-debug-info' | 'respawn-radius' | 'send-command-feedback' | 'show-advancement-messages' | 'show-death-messages' | 'spawn-mobs' | 'spawn-monsters' | 'spawn-patrols' | 'spawn-phantoms' | 'spawn-wandering-traders' | 'spawn-wardens' | 'spawner-blocks-work' | 'spectators-generate-chunks' | 'spread-vines' | 'tnt-explodes' | 'tnt-explosion-drop-decay' | 'universal-anger' | 'water-source-conversion';
+  export type GameRuleValue = GameRuleValueInt | GameRuleValueBool;
+  export interface GameRuleValueInt {
+    tag: 'int',
+    val: number,
+  }
+  export interface GameRuleValueBool {
+    tag: 'bool',
+    val: boolean,
+  }
+}

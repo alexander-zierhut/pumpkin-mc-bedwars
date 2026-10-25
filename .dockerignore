@@ -1,0 +1,13 @@
+# only vendor/Pumpkin, plugin, config, maps, tools and docker go into the image build
+*
+!vendor/Pumpkin
+vendor/Pumpkin/target
+vendor/Pumpkin/.git
+!plugin
+plugin/node_modules
+plugin/dist
+plugin/.wit-build
+!config
+!maps
+!tools
+!docker

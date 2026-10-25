@@ -1,0 +1,70 @@
+# Builds the finished BedWars server on every push to main:
+# - the Docker image ghcr.io/<owner>/pumpkin-mc-bedwars (tags latest and the commit)
+# - bedwars-server-linux-x86_64.tar.gz (binary, plugin, config, Rush map) on the rolling release "latest"
+name: Build server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image name
+        id: image
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      # the Rust stage is only rebuilt when vendor/Pumpkin changes (layer cache in the GitHub Actions cache)
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:latest
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Server archive
+        run: |
+          image=${{ steps.image.outputs.name }}:${{ github.sha }}
+          docker pull "$image"
+          id=$(docker create "$image")
+          mkdir -p dist/bedwars-server
+          docker cp "$id:/opt/bedwars/." dist/bedwars-server/
+          docker cp "$id:/usr/local/bin/pumpkin" dist/bedwars-server/pumpkin
+          docker rm "$id"
+          cp docker/start.sh dist/bedwars-server/start.sh
+          tar -czf bedwars-server-linux-x86_64.tar.gz -C dist bedwars-server
+
+      - name: Rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest bedwars-server-linux-x86_64.tar.gz \
+            --title "Latest build" --target "$GITHUB_SHA" \
+            --notes "Built from ${GITHUB_SHA::7}. Docker: \`docker run -it -p 25565:25565 -v bedwars:/srv ${{ steps.image.outputs.name }}:latest\`"

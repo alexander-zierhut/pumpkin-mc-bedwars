@@ -1,0 +1,35 @@
+# build output and local state
+/build/target/
+/build/cargo-home/
+/build/pumpkin
+/build/pumpkin.new
+/build/*.log
+/build/.build.lock
+/data/
+/server/
+/proxy/
+plugin/node_modules/
+plugin/dist/
+plugin/.wit-build/
+tests/node_modules/
+tests/.runs/
+tests/reports/
+tests/play/replays/
+
+# not redistributable or not part of the project: Mojang jars, the decompiled vanilla source, maps by others
+tests/compare/vanilla189/server.jar
+/reference/
+/maps/*
+!/maps/rush/
+/vendor/*
+!/vendor/Pumpkin
+
+# local deployment and working folders
+/config/ops.json
+/deploy/
+/work/
+/scratch/
+/attic/
+__pycache__/
+tests/play/dev/
+tests/play/ai-round.workflow.js

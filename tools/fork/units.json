@@ -1,0 +1,338 @@
+[
+ {
+  "branch": "feat/rcon",
+  "commits": [
+   "feat(net): restore rcon next to the management protocol",
+   "fix(rcon): send the command output as one response like vanilla (4096-byte fragments)"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/zero-lpvec3",
+  "commits": [
+   "fix(protocol): read a zero LpVec3 as the single byte vanilla writes"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "feat/legacy-combat",
+  "commits": [
+   "feat(combat): optional Minecraft 1.8 combat for modern clients",
+   "feat(combat): 1.8 server attack distance limit",
+   "fix(combat): 1.8 knockback starts from the server's own copy of the player's motion (no stacking over hits, 1.8.9 values for jumping players)",
+   "feat(bow): legacy arrows start on the look ray like 26.x (1.8 put them 0.16 right of the crosshair)",
+   "feat(combat): 1.8 arrows stop along their motion when they stick (a flat shot lies on the floor)"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "feat/wasm-drop-item-entity-command",
+  "commits": [
+   "feat(plugin): drop-item, get-entity-by-id and run-command for wasm plugins",
+   "feat(plugin): drop-item can spawn item entities that never merge"
+  ],
+  "builds_on": [
+   "feat/rcon"
+  ]
+ },
+ {
+  "branch": "feat/wasm-filtered-explosions",
+  "commits": [
+   "feat(world): filtered explosions for plugins, explosion knockback for players via the explosion packet"
+  ],
+  "builds_on": [],
+  "manual": "cherry-picked without feat/wasm-drop-item-entity-command: the drop-item lines in bindings.rs and world.rs were dropped from the conflict"
+ },
+ {
+  "branch": "feat/wasm-screens",
+  "commits": [
+   "feat(plugin): close-screen, sync-inventory and shareable GUIs for wasm plugins"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/wasm-sound-names",
+  "commits": [
+   "fix(plugin): resolve WIT sounds by name instead of the enum Debug text"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "feat/wasm-forced-chunks",
+  "commits": [
+   "feat(plugin): force chunk loading and loaded checks for wasm plugins"
+  ],
+  "builds_on": [],
+  "manual": "cherry-picked without feat/wasm-drop-item-entity-command: drop-item and get-entity-by-id dropped from the conflict in world.wit and world.rs"
+ },
+ {
+  "branch": "feat/wasm-explode-event-source",
+  "commits": [
+   "feat(plugin): entity explode event carries the source entity and the world"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/teleport-chunk-view",
+  "commits": [
+   "fix(player): move the chunk view when the server teleports a player"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/superseded-teleport-confirms",
+  "commits": [
+   "fix(net): ignore confirms of superseded teleports like vanilla"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/projectiles-hit-players",
+  "commits": [
+   "fix(projectile): arrows, tridents, thrown items, fishing hooks and evoker fangs can hit players again; skip spectators"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/arrow-flight-order",
+  "commits": [
+   "fix(arrow): vanilla flight order (move, inertia, gravity), hit players, no per-tick velocity packets or server-side trail particles"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/projectile-shooter-movement",
+  "commits": [
+   "fix(projectile): inherit the shooter's known movement like vanilla shootFromRotation (not for crossbows, not in legacy combat)"
+  ],
+  "builds_on": [
+   "feat/legacy-combat"
+  ]
+ },
+ {
+  "branch": "fix/death-health-update",
+  "commits": [
+   "fix(player): send the 0 health update on death before marking the client unloaded"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/styled-custom-names-protocol",
+  "commits": [
+   "fix(text): send styled custom item names; read NBT byte booleans in text components",
+   "test(protocol): check styled custom names against bytes from the vanilla 26.3 codec"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/execute-conditions",
+  "commits": [
+   "fix(execute): if/unless conditions are complete commands like vanilla (if entity reports the count)"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/arrow-pickup-shake",
+  "commits": [
+   "fix(arrow): no pickup while a stuck arrow still shakes, like vanilla"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/item-argument-styled-names",
+  "commits": [
+   "fix(item): styled custom names and lore in commands and saved data; consumable defaults like vanilla"
+  ],
+  "builds_on": [
+   "fix/styled-custom-names-protocol"
+  ]
+ },
+ {
+  "branch": "fix/potion-contents-name",
+  "commits": [
+   "fix(item): save potion contents with the potion's registry name like vanilla"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/ride-player-follow",
+  "commits": [
+   "fix(entity): entities riding a player follow it (vanilla rideTick) instead of moving on their own"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/health-before-player-loaded",
+  "commits": [
+   "fix(player): send Java health updates before the client reports player_loaded, like vanilla"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/selector-quoted-name",
+  "commits": [
+   "fix(selector): name= accepts quoted strings like vanilla"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/execute-block-predicate",
+  "commits": [
+   "fix(execute): if/unless block take a block predicate (tags) like vanilla"
+  ],
+  "builds_on": [
+   "fix/execute-conditions"
+  ]
+ },
+ {
+  "branch": "fix/join-tab-list-first",
+  "commits": [
+   "fix(join): no entity spawns to a joining Java player before it got the tab list (late joiners saw nobody)"
+  ],
+  "builds_on": [],
+  "manual": "cherry-picked without the health branch: the client_loaded_once field dropped from the conflict in player.rs"
+ },
+ {
+  "branch": "fix/move-racing-teleport",
+  "commits": [
+   "fix(net): drop a client move that raced a server teleport (viewers saw the player at its old position until respawn)"
+  ],
+  "builds_on": [
+   "fix/teleport-chunk-view"
+  ],
+  "manual": "cherry-picked without feat/legacy-combat: the record_legacy_movement lines dropped"
+ },
+ {
+  "branch": "fix/screen-over-screen",
+  "commits": [
+   "fix(inventory): open a screen over another without a close packet like Paper (the client kept re-centering the mouse)"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/consumable-particles-default",
+  "commits": [
+   "fix(item): consumable particles default to on when read from NBT, like vanilla"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/component-hashes",
+  "commits": [
+   "fix(item): component hashes like vanilla HashOps (clients resent every clicked slot, items snapped back)"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/item-patch-compare",
+  "commits": [
+   "fix(item): compare stacks and click hashes on the patch as vanilla keeps it (default entries made equal items differ)"
+  ],
+  "builds_on": [
+   "fix/component-hashes",
+   "fix/styled-custom-names-protocol"
+  ]
+ },
+ {
+  "branch": "fix/projectile-owner-rules",
+  "commits": [
+   "fix(projectile): no hits on what rides with the owner until the projectile left it, like vanilla canHitEntity",
+   "fix(projectile): skip the owner until the projectile left it, like vanilla; 1.8 keeps its 5 ticks"
+  ],
+  "builds_on": [
+   "fix/projectiles-hit-players"
+  ],
+  "manual": "second commit without the 1.8 arm: skips_owner(left_owner, owner_id, target) is vanilla only, callers adapted, commit subject without the 1.8 part; built without fix/arrow-flight-order (spectator lines dropped from the arrow.rs conflict)"
+ },
+ {
+  "branch": "fix/arrow-hit-ding",
+  "commits": [
+   "fix(arrow): the shooter hears the hit ding when its arrow hurts a player; hit sound only for hits that hurt"
+  ],
+  "builds_on": [
+   "fix/arrow-flight-order"
+  ]
+ },
+ {
+  "branch": "fix/free-arrow-pickup",
+  "commits": [
+   "fix(bow): arrows that cost no ammo (Infinity, creative, extra Multishot arrows) only creative players pick up; despawn timer restarts when a stuck arrow falls"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/motion-sync-viewers",
+  "commits": [
+   "fix(entity): pushing a player no longer sends it a velocity packet (felt like a punch), like vanilla needsSync",
+   "fix(entity): send motion syncs to viewers only and a hit's motion to the entity once, like vanilla"
+  ],
+  "builds_on": [
+   "feat/legacy-combat"
+  ],
+  "manual": "the two own commits squashed into one on top of feat/legacy-combat"
+ },
+ {
+  "branch": "fix/cancelled-move-position",
+  "commits": [
+   "fix(net): a cancelled move puts the player back where it was, not at the cancelled target once the client confirms"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/jump-detection",
+  "commits": [
+   "fix(net): count a jump from a move with rotation when the player leaves the ground, like vanilla (it counted steps up instead)"
+  ],
+  "builds_on": [],
+  "manual": "uses (packet.collision & FLAG_ON_GROUND) == 0 instead of the on_ground binding that only exists with fix/move-racing-teleport"
+ },
+ {
+  "branch": "fix/plugin-reentry-scope",
+  "commits": [
+   "fix(plugin): register the reentry scope before a blocking host operation starts (a screen closed at round start could deadlock the store and the tick)"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "perf/tick-small-work-inline",
+  "commits": [
+   "perf(tick): tick small worlds and short loops on the calling thread instead of waking Rayon",
+   "perf(entity): plan entity islands only when the entity ticks took >= 1 ms",
+   "perf(spawn): run natural spawning in order unless it took >= 1 ms on the last tick"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "perf/chunk-map-fx-hash",
+  "commits": [
+   "perf(world): hash chunk positions with Fx in the chunk maps instead of SipHash"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "perf/plugin-event-dispatch",
+  "commits": [
+   "perf(plugin): type the v0.1 handle-event export once per handler instead of on every event",
+   "perf(plugin): a non-blocking v0.1 event handler runs as its own task instead of holding the caller (every player move waited for one guest call)"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "perf/startup-malloc-trim",
+  "commits": [
+   "perf(memory): give the heap freed during startup back to the OS after loading the plugins"
+  ],
+  "builds_on": []
+ },
+ {
+  "branch": "fix/teleport-id-lock",
+  "commits": [
+   "fix(player): hand out teleport ids and queue the packet under the teleport lock"
+  ],
+  "builds_on": [
+   "fix/move-racing-teleport",
+   "fix/cancelled-move-position"
+  ],
+  "manual": "built on the adapted fix/move-racing-teleport plus fix/cancelled-move-position"
+ }
+]

@@ -1,0 +1,22 @@
+{
+  "name": "lan-bedwars-pumpkin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Rewinside-style BedWars for Pumpkin, written in TypeScript (Wasm component)",
+  "scripts": {
+    "types": "jco guest-types ../vendor/Pumpkin/crates/pumpkin-plugin-wit/v0.1 -n plugin -o src/bindings --name index",
+    "build": "node build.mjs",
+    "check": "tsc --noEmit",
+    "test": "node --experimental-transform-types --no-warnings --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@bytecodealliance/jco": "^1.34.0",
+    "componentize-qjs": "^0.4.5",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1"
+  }
+}

@@ -1,0 +1,62 @@
+# LAN BedWars settings (Rewinside style). Built into the plugin: after a change run tools/apply.sh and restart.
+# Arenas are config/arena-*.yml, the shop is config/shop.yml (same formats as the Paper/ScreamingBedWars setup).
+
+# Arena players are put into automatically (change in-game with /map <name>)
+arena: Rush
+# Built into the plugin. The other config/arena-*.yml are installed by tools/apply.sh when their map is in maps/
+arenas: [rush]
+# Every player who connects joins the active arena (/autojoin toggles it for yourself)
+auto-join: true
+# Rewinside: hover a shop item and press 1-9 to buy it straight into that hotbar slot
+hotbar-buy: true
+# Players needed before the lobby countdown runs; the countdown itself is the arena's pauseCountdown
+# (3600 = admin starts with /start or the diamond)
+min-players: 2
+
+resources:
+  bronze: { item: brick, name: Bronze, color: "§4", interval: 1 }
+  iron: { item: iron_ingot, name: Silber, color: "§7", interval: 10 }
+  gold: { item: gold_ingot, name: Gold, color: "§6", interval: 30 }
+
+# Lore added below every shop item (%price%, %resource%, %amount%)
+shop-lore:
+  - "§7Preis:"
+  - "§f§l%price% %resource%"
+  - "§7Menge:"
+  - "§f%amount%"
+
+respawn-protection-seconds: 3
+friendly-fire: false
+# Chat while a game runs goes to the own team; start a message with this prefix to talk to everybody
+all-chat-prefix: "@a"
+
+# Reconnect during a running game: a player who was alive in a team is put back into it.
+# When the last player of a team disconnects, the team stays in the game this long.
+rejoin:
+  enabled: true
+  grace-seconds: 60
+
+# Rewinside special items (behaviour ported from github.com/Marfien/rewi-bw)
+teleporter:
+  countdown-seconds: 3
+  launch-height: 150
+  launch-speed: 3.9
+parachute:
+  horizontal-speed: 0.6
+  fall-speed: 0.217
+  duration-seconds: 45
+mobile-shop:
+  duration-seconds: 20
+rescue-platform:
+  material: glass
+  break-seconds: 10
+auto-ignite-tnt:
+  fuse-seconds: 4
+  power: 4.0
+  damage: 4.0
+
+# Instant void death below this height, per map world
+void-kill:
+  bedwars: 80
+  rewi_mushroom: 52
+  rewi_mansion: 51

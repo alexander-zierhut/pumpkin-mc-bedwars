@@ -1,0 +1,98 @@
+name: Mushroom
+pauseCountdown: 3600
+gameTime: 3600
+world: rewi_mushroom
+pos1: -40;42;-31;0.0;0.0
+pos2: 96;220;187;0.0;0.0
+specSpawn: 28.5;120;78.5;0.0;90.0
+lobbySpawn: 28.5;121;300.5;0.0;0.0
+lobbySpawnWorld: rewi_mushroom
+minPlayers: 2
+postGameWaiting: 5
+teams:
+  Rot:
+    isNewColor: true
+    color: RED
+    maxPlayers: 4
+    bed: 33;88;2;0.0;0.0
+    spawn: 29.5;88;11.5;0.0;0.0
+    actualName: Rot
+  Lila:
+    isNewColor: true
+    color: MAGENTA
+    maxPlayers: 4
+    bed: 23;88;154;0.0;0.0
+    spawn: 27.5;88;145.5;180.0;0.0
+    actualName: Lila
+spawners:
+- location: 21.5;84.0;9.5;0.0;0.0
+  type: bronze
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: Rot
+  maxSpawnedResources: -1
+- location: 35.5;84.0;147.5;0.0;0.0
+  type: bronze
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: Lila
+  maxSpawnedResources: -1
+- location: 74.5;88.0;0.5;0.0;0.0
+  type: iron
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+- location: -17.5;88.0;156.5;0.0;0.0
+  type: iron
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+- location: 26.5;89.0;80.5;0.0;0.0
+  type: gold
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+- location: 26.5;89.0;76.5;0.0;0.0
+  type: gold
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+- location: 30.5;89.0;76.5;0.0;0.0
+  type: gold
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+- location: 30.5;89.0;80.5;0.0;0.0
+  type: gold
+  customName: null
+  startLevel: 1.0
+  hologramEnabled: true
+  team: null
+  maxSpawnedResources: -1
+stores:
+- loc: 28.5;88.0;3.5;-45.0;0.0
+  parent: 'true'
+  type: VILLAGER
+  name: '§eShop'
+  isBaby: 'false'
+- loc: 28.5;88.0;153.5;135.0;0.0
+  parent: 'true'
+  type: VILLAGER
+  name: '§eShop'
+  isBaby: 'false'
+arenaTime: DAY
+arenaWeather: CLEAR
+lobbyBossBarColor: default
+gameBossBarColor: default
