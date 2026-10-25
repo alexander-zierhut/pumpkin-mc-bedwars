@@ -98,13 +98,13 @@ async function voidDrop (t, vic, team) {
 
 /** The harness records the sidebar of every bot from its first packet on (bot.scoreRaw). */
 function watchScores (bot) {}
-/** { 'Rot': 2, 'Blau': 1 } from the team lines of the sidebar ("✔Rot" / "✘Blau"). */
+/** { 'Red': 2, 'Blue': 1 } from the team lines of the sidebar ("✔Red" / "✘Blue"). */
 function teamCounts (bot) {
   const st = bot.scoreRaw
   const o = (st && st.scores[st.sidebarObjective]) || {}
   const out = {}
   for (const [k, v] of Object.entries(o)) {
-    const m = /(Rot|Blau)\s*$/.exec(plain(k).trim())
+    const m = /(Red|Blue)\s*$/.exec(plain(k).trim())
     if (m) out[m[1]] = v
   }
   return out
@@ -150,11 +150,11 @@ module.exports = {
     bots.forEach(watchScores)
     const teams = await Promise.all(bots.map(b => waitForGameStart(b)))
     const count = n => teams.filter(x => x === n).length
-    const balanced = (count('Rot') === 2 && count('Blau') === 1) || (count('Rot') === 1 && count('Blau') === 2)
+    const balanced = (count('Red') === 2 && count('Blue') === 1) || (count('Red') === 1 && count('Blue') === 2)
     t.check('game starts and teams are 2:1', balanced, teams)
     if (!balanced) return
-    const T2 = count('Rot') === 2 ? 'Rot' : 'Blau'
-    const T1 = T2 === 'Rot' ? 'Blau' : 'Rot'
+    const T2 = count('Red') === 2 ? 'Red' : 'Blue'
+    const T1 = T2 === 'Red' ? 'Blue' : 'Red'
     const names = bots.map(b => b.username)
     const duoNames = names.filter((n, i) => teams[i] === T2)
     const loneName = names.find((n, i) => teams[i] === T1)
@@ -181,7 +181,7 @@ module.exports = {
       const during = teamCounts(Q)
       t.check('scoreboard shows 1 player in the team while the member is away', during[T2] === 1, during)
       t.check('the game goes on without him (teammate and enemy still on their islands)',
-        atTeamSpawn(P2, T2) && atTeamSpawn(Q, T1) && chatSince(Q, quitAt, /gewonnen/).length === 0, { P2: fmt(pos(P2)), Q: fmt(pos(Q)) })
+        atTeamSpawn(P2, T2) && atTeamSpawn(Q, T1) && chatSince(Q, quitAt, /won the game/).length === 0, { P2: fmt(pos(P2)), Q: fmt(pos(Q)) })
 
       const backAt = Date.now()
       P1 = await reconnect(P1.username)
@@ -195,11 +195,11 @@ module.exports = {
       t.check('server has him in survival mode (gamemode 0)', (await srvGameType(t, P1)) === 0)
       const sp = await srvPos(t, P1)
       t.check('server position is the team spawn, not the old position', !!sp && Math.hypot(sp.x - SPAWN(T2).x, sp.z - SPAWN(T2).z) < 2.5 && Math.abs(sp.y - SPAWN(T2).y) < 1.5, sp)
-      t.check('he got the welcome-back message naming the team', chatSince(P1, backAt, new RegExp(`Willkommen zurück in Team ${T2}`)).length > 0, P1.chatLog.slice(-6).map(c => c.m))
-      t.check('his teammate is told that he is back', chatSince(P2, backAt, new RegExp(`${P1.username}.* ist wieder im Spiel`)).length > 0)
-      t.check('the enemy is not told', chatSince(Q, backAt, /ist wieder im Spiel/).length === 0)
+      t.check('he got the welcome-back message naming the team', chatSince(P1, backAt, new RegExp(`Welcome back to team ${T2}`)).length > 0, P1.chatLog.slice(-6).map(c => c.m))
+      t.check('his teammate is told that he is back', chatSince(P2, backAt, new RegExp(`${P1.username}.* is back in the game`)).length > 0)
+      t.check('the enemy is not told', chatSince(Q, backAt, /is back in the game/).length === 0)
       t.check('inventory is empty like after a death (no old items, no spectator leave item)', P1.inventory.items().length === 0, invSummary(P1))
-      t.check('respawn protection runs after the rejoin', chatSince(P1, backAt, /Respawn Schutz/).length > 0, chatSince(P1, backAt, /Respawn/))
+      t.check('respawn protection runs after the rejoin', chatSince(P1, backAt, /Respawn protection/).length > 0, chatSince(P1, backAt, /Respawn/))
       const after = teamCounts(Q)
       t.check('scoreboard (seen by the enemy) counts 2 players in the team again', after[T2] === 2, after)
       await sleep(1000)
@@ -293,7 +293,7 @@ module.exports = {
       const quitAt = Date.now()
       await disconnect(P1)
       await sleep(1500)
-      t.check('the game goes on while the bedless team has one player left', chatSince(Q, quitAt, /gewonnen/).length === 0 && atTeamSpawn(P2, T2) === true)
+      t.check('the game goes on while the bedless team has one player left', chatSince(Q, quitAt, /won the game/).length === 0 && atTeamSpawn(P2, T2) === true)
       const backAt = Date.now()
       P1 = await reconnect(P1.username)
       const ok = await waitFor(() => atTeamSpawn(P1, T2), { timeout: 25000, what: 'P1 back at the team spawn' }).then(() => true, () => false)
@@ -301,7 +301,7 @@ module.exports = {
         { ms: Date.now() - backAt, pos: fmt(pos(P1)), mode: P1.game.gameMode })
       await sleep(800)
       t.check('server has him in survival mode', (await srvGameType(t, P1)) === 0)
-      t.check('welcome-back message', chatSince(P1, backAt, new RegExp(`Willkommen zurück in Team ${T2}`)).length > 0)
+      t.check('welcome-back message', chatSince(P1, backAt, new RegExp(`Welcome back to team ${T2}`)).length > 0)
       const counts = teamCounts(Q)
       t.check('scoreboard counts 2 players again (bed lost)', counts[T2] === 2, counts)
       // with the bed gone, the next death is final: proves he is a real, living team member
@@ -323,9 +323,9 @@ module.exports = {
       const sp = await srvPos(t, P1)
       t.check('a player who died without a bed comes back as spectator', (await srvGameType(t, P1)) === 3, { mode: P1.game.gameMode })
       t.check('he is not put at the team spawn', !sp || Math.hypot(sp.x - SPAWN(T2).x, sp.z - SPAWN(T2).z) > 10, sp)
-      t.check('no welcome-back message for him', chatSince(P1, backAt, /Willkommen zurück/).length === 0)
+      t.check('no welcome-back message for him', chatSince(P1, backAt, /Welcome back/).length === 0)
       t.check('the team still counts 1 player', teamCounts(Q)[T2] === 1, teamCounts(Q))
-      t.check('the game is still running', chatSince(Q, quitAt, /gewonnen/).length === 0)
+      t.check('the game is still running', chatSince(Q, quitAt, /won the game/).length === 0)
     })
 
     // ---------------------------------------------------------------- 4. lone player, grace period
@@ -336,13 +336,13 @@ module.exports = {
       const countsBefore = teamCounts(P2)
       loneQuitAt = Date.now()
       await disconnect(Q)
-      await waitFor(() => chatSince(P2, loneQuitAt, /hat die Verbindung verloren/).length > 0, { timeout: 5000, what: 'grace message' })
+      await waitFor(() => chatSince(P2, loneQuitAt, /lost connection/).length > 0, { timeout: 5000, what: 'grace message' })
         .then(() => t.check('the other team is told that the team stays in the game for the grace period',
-          chatSince(P2, loneQuitAt, new RegExp(`Team ${T1} bleibt ${GRACE} Sekunden im Spiel`)).length > 0, chatSince(P2, loneQuitAt, /Verbindung/)),
+          chatSince(P2, loneQuitAt, new RegExp(`Team ${T1}.* stays in the game for ${GRACE} seconds`)).length > 0, chatSince(P2, loneQuitAt, /lost connection/)),
         () => t.check('the other team is told that the team stays in the game for the grace period', false, P2.chatLog.slice(-5).map(c => c.m)))
       await sleep(4500)
       t.check('the game goes on although the team has no player (no win message, nobody teleported)',
-        chatSince(P2, loneQuitAt, /gewonnen/).length === 0 && atTeamSpawn(P2, T2) === true, { P2: fmt(pos(P2)), mode: P2.game.gameMode })
+        chatSince(P2, loneQuitAt, /won the game/).length === 0 && atTeamSpawn(P2, T2) === true, { P2: fmt(pos(P2)), mode: P2.game.gameMode })
       t.check('the empty team is still on the scoreboard with its bed', countsBefore[T1] === 1 && teamCounts(P2)[T1] === 0, { before: countsBefore, now: teamCounts(P2) })
 
       const backAt = Date.now()
@@ -352,13 +352,13 @@ module.exports = {
         { sinceQuitMs: Date.now() - loneQuitAt, pos: fmt(pos(Q)), mode: Q.game.gameMode })
       await sleep(800)
       t.check('server has him in survival mode', (await srvGameType(t, Q)) === 0)
-      t.check('welcome-back message', chatSince(Q, backAt, new RegExp(`Willkommen zurück in Team ${T1}`)).length > 0)
+      t.check('welcome-back message', chatSince(Q, backAt, new RegExp(`Welcome back to team ${T1}`)).length > 0)
       t.check('scoreboard counts him again', teamCounts(P2)[T1] === 1, teamCounts(P2))
 
       // the grace period is over for good: staying in the game must not end it when the original deadline passes
       await sleep(Math.max(0, loneQuitAt + (GRACE + 3) * 1000 - Date.now()))
       t.check('after the original deadline the team is still in the game (it is occupied again)',
-        chatSince(P2, loneQuitAt, /gewonnen|ausgeschieden/).length === 0 && atTeamSpawn(Q, T1) === true, { mode: Q.game.gameMode, pos: fmt(pos(Q)) })
+        chatSince(P2, loneQuitAt, /won the game|eliminated/).length === 0 && atTeamSpawn(Q, T1) === true, { mode: Q.game.gameMode, pos: fmt(pos(Q)) })
     })
 
     // ---------------------------------------------------------------- 5. lone player, grace period expires
@@ -366,17 +366,17 @@ module.exports = {
       await sleep(1000)
       const quitAt = Date.now()
       await disconnect(Q)
-      const elim = await waitFor(() => chatSince(P2, quitAt, /ist ausgeschieden/).length > 0, { timeout: GRACE * 1000 + 10000, what: 'elimination message' })
+      const elim = await waitFor(() => chatSince(P2, quitAt, /has been eliminated/).length > 0, { timeout: GRACE * 1000 + 10000, what: 'elimination message' })
         .then(() => Date.now() - quitAt, () => null)
       t.check('the team is eliminated when the grace period is over (not earlier)', elim != null && elim >= (GRACE - 2) * 1000 && elim <= (GRACE + 5) * 1000, { elapsedMs: elim, graceSeconds: GRACE })
-      const won = await waitFor(() => chatSince(P2, quitAt, /hat das Spiel in .* gewonnen/).length > 0, { timeout: 10000, what: 'win message' })
-        .then(() => chatSince(P2, quitAt, /hat das Spiel in .* gewonnen/), () => null)
+      const won = await waitFor(() => chatSince(P2, quitAt, /won the game in /).length > 0, { timeout: 10000, what: 'win message' })
+        .then(() => chatSince(P2, quitAt, /won the game in /), () => null)
       t.check('the remaining team wins', !!won && won[0].includes(`Team ${T2} `), won)
 
       const backAt = Date.now()
       Q = await reconnect(Q.username)
       await sleep(6000)
-      t.check('reconnecting after the grace period does not put him into the eliminated team', !atTeamSpawn(Q, T1) && chatSince(Q, backAt, /Willkommen zurück/).length === 0,
+      t.check('reconnecting after the grace period does not put him into the eliminated team', !atTeamSpawn(Q, T1) && chatSince(Q, backAt, /Welcome back/).length === 0,
         { pos: fmt(pos(Q)), mode: Q.game.gameMode })
     })
 

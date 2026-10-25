@@ -105,10 +105,10 @@ function start () {
   })
   b.on('death', () => {
     lastDeath = Date.now()
-    pushChat('* du bist gestorben', 'self')
+    pushChat('* you died', 'self')
     if (task && task.status === 'running' && !['wait', 'chat'].includes(task.name)) cancelTask(task, 'died')
   })
-  b.on('spawn', () => { if (lastDeath && Date.now() - lastDeath < 20000) pushChat('* du bist respawnt', 'self') })
+  b.on('spawn', () => { if (lastDeath && Date.now() - lastDeath < 20000) pushChat('* you respawned', 'self') })
   b.on('health', () => { if (b._lastHealth !== undefined && b.health < b._lastHealth) lastDamageAt = Date.now(); b._lastHealth = b.health })
   b.on('kicked', r => log('kicked', JSON.stringify(r).slice(0, 200)))
   b.on('error', e => log('error', e.message))
@@ -140,7 +140,7 @@ function makeMovements () {
 const me = () => bot.entity.position
 const myTeam = () => {
   const t = bot.teamMap && bot.teamMap[NAME]
-  if (t && (t.team === 'Rot' || t.team === 'Blau')) return t.team
+  if (t && (t.team === 'Red' || t.team === 'Blue')) return t.team
   return null
 }
 const isSpectator = () => bot.game && bot.game.gameMode === 'spectator'
@@ -254,7 +254,7 @@ function playerList () {
     if (p.username === NAME || !p.entity) continue
     if (p.gamemode === 3) continue
     const team = bot.teamMap && bot.teamMap[p.username] ? bot.teamMap[p.username].team : null
-    out.push({ name: p.username, entity: p.entity, team: team === 'Rot' || team === 'Blau' ? team : null })
+    out.push({ name: p.username, entity: p.entity, team: team === 'Red' || team === 'Blue' ? team : null })
   }
   return out
 }
@@ -523,7 +523,7 @@ async function fightLoop (t, { targetName, seconds = 30 }) {
       if (bot.pathfinder.isMoving() || bot.pathfinder.goal) noPathSince = bot.pathfinder.isMoving() ? Date.now() : noPathSince
       if (Date.now() - noPathSince > 4000 && d > 6) {
         bot.pathfinder.setGoal(null)
-        return `${target.name} is not reachable by walking (distance ${r1(d)}): bridge to ${target.entity.position.z < 0 ? 'the Rot' : 'the Blau'} side first, or use shoot`
+        return `${target.name} is not reachable by walking (distance ${r1(d)}): bridge to ${target.entity.position.z < 0 ? 'the Red' : 'the Blue'} side first, or use shoot`
       }
     } else {
       if (mode !== 'melee') { bot.pathfinder.setGoal(null); mode = 'melee' }
@@ -659,7 +659,7 @@ async function buyOnce (t, w, slot) {
   const t0 = Date.now()
   while (Date.now() - t0 < 1200) {
     const lines = chatBuf.filter(c => c.i > mark).map(c => c.text)
-    const ok = lines.find(l => /gekauft/.test(l)); const bad = lines.find(l => /nicht genug/.test(l))
+    const ok = lines.find(l => /purchased/.test(l)); const bad = lines.find(l => /not have enough/.test(l))
     if (ok) return { ok: true, line: ok }
     if (bad) return { ok: false, line: bad }
     await t.sleep(60)
@@ -674,7 +674,7 @@ const ACTIONS = {}
 async function gotoOrBridge (t, dest, spec, gopts, autoBridge) {
   try { await gotoPos(t, dest, gopts) } catch (e) {
     if (e === CANCEL || !autoBridge || !/bridge/.test(e.message)) throw e
-    if (!bestBlock()) throw new Error(e.message + ' (and you have no blocks to bridge with: buy Sandstein)')
+    if (!bestBlock()) throw new Error(e.message + ' (and you have no blocks to bridge with: buy Sandstone)')
     await ACTIONS.bridge(t, { target: spec })
     await gotoPos(t, dest, gopts)
   }
@@ -729,8 +729,8 @@ ACTIONS.buy = async (t, a) => {
   const near = findShopkeeper()
   if (!near || near.position.distanceTo(me()) > 5) await gotoPos(t, MAP.named('shop', myTeam()), { range: 1.5 })
   let w = await openShop(t)
-  // category selection: prefer a specific category (not "Schnellkauf") for the item
-  const cats = [...entry.categories].sort((x, y) => (x === 'Schnellkauf') - (y === 'Schnellkauf'))
+  // category selection: prefer a specific category (not "Quick Buy") for the item
+  const cats = [...entry.categories].sort((x, y) => (x === 'Quick Buy') - (y === 'Quick Buy'))
   let bought = 0; let lastMsg = ''
   let found = null
   for (const catName of cats) {
@@ -777,7 +777,7 @@ ACTIONS.equip = async (t, a) => {
 
 ACTIONS.eat_gapple = async (t) => {
   const g = gappleItem()
-  if (!g) throw new Error('no golden apple (buy one: item "Goldapfel")')
+  if (!g) throw new Error('no golden apple (buy one: item "Golden Apple")')
   const hp = bot.health
   await eatItem(g)
   t.check()
@@ -810,8 +810,8 @@ ACTIONS.attack = async (t, a) => fightLoop(t, { targetName: a.player || a.name, 
 ACTIONS.shoot = async (t, a) => {
   const seconds = Math.min(Number(a.seconds || 20), 120)
   const bow = bot.inventory.items().find(i => i.name === 'bow')
-  if (!bow) throw new Error('no bow (buy "Bogen I")')
-  if (!count('arrow')) throw new Error('no arrows (buy "Pfeil")')
+  if (!bow) throw new Error('no bow (buy "Bow I")')
+  if (!count('arrow')) throw new Error('no arrows (buy "Arrow")')
   await equipHand(bow)
   const t0 = Date.now()
   let shots = 0
@@ -901,7 +901,7 @@ ACTIONS.bridge = async (t, a) => {
     try { await gotoPos(t, dest, { range: 2.5, timeout: 25000 }) } catch (e) { if (e === CANCEL) throw e }
     return `bridge complete (${placed} blocks placed); standing at (${r1(me().x)}, ${r1(me().y)}, ${r1(me().z)}), ${left} blocks left`
   }
-  if (status === 'out_of_blocks') throw new Error(`out of blocks after placing ${placed}; buy more Sandstein and call bridge again (same target)`)
+  if (status === 'out_of_blocks') throw new Error(`out of blocks after placing ${placed}; buy more Sandstone and call bridge again (same target)`)
   throw new Error(`bridge stopped (${status || 'timeout'}) after ${placed} blocks`)
 }
 
@@ -979,7 +979,7 @@ ACTIONS.defend_bed = async (t, a) => {
   const team = myTeam() || MAP.teamNames[0]
   const own = MAP.teams[team]
   const n = Math.min(Number(a.blocks || a.count || 10), 40)
-  if (!bestBlock()) throw new Error('no blocks to place (buy "Sandstein")')
+  if (!bestBlock()) throw new Error('no blocks to place (buy "Sandstone")')
   const Y = own.bed.y
   const key = (x, y, z) => `${x},${y},${z}`
   const bedCells = bedBlocks(team).map(b => b.position)
@@ -1060,7 +1060,7 @@ ACTIONS.use = async (t, a) => {
     const y0 = me().y
     await equipHand(it)
     bot.activateItem(); await sleep(80); bot.deactivateItem()
-    const para = findItem('Fallschirm')
+    const para = findItem('Parachute')
     if (para && toward) await equipHand(para)
     // wait for the 3 s countdown and the launch
     const t0 = Date.now()
@@ -1084,7 +1084,7 @@ ACTIONS.use = async (t, a) => {
   }
   if (/fallschirm/.test(label)) {
     await equipHand(it)
-    if (bot.entity.onGround) throw new Error('you must be in the air to use the Fallschirm')
+    if (bot.entity.onGround) throw new Error('you must be in the air to use the Parachute')
     bot.activateItem()
     await sleep(80)
     return glide(t, toward, 'parachute')
@@ -1135,13 +1135,13 @@ function reflexTick () {
   if (connected && bot && bot.entity) { const spec = isSpectator(); if (bot.physicsEnabled === spec) bot.physicsEnabled = !spec }
   if (!connected || !bot || !bot.entity || isSpectator() || bot.health <= 0) return
   const name = task && task.status === 'running' ? task.name : null
-  // rescue from the void: use a Rettungsplattform while falling
+  // rescue from the void: use a Rescue Platform while falling
   if (me().y < MAP.walkY - 6 && me().y > MAP.voidY && bot.entity.velocity.y < -0.2) {
-    const plat = findItem('Rettungsplattform')
+    const plat = findItem('Rescue Platform')
     if (plat && Date.now() - (reflexTick.lastPlat || 0) > 3000) {
       reflexTick.lastPlat = Date.now()
       equipHand(plat).then(() => { bot.activateItem(); setTimeout(() => bot.deactivateItem(), 100) })
-      pushChat('* auto: Rettungsplattform benutzt', 'self')
+      pushChat('* auto: Rescue Platform benutzt', 'self')
     }
   }
   if (reflexOff || bot.currentWindow || ['attack', 'shoot', 'buy'].includes(name)) return
@@ -1249,7 +1249,7 @@ const HELP = {
   actions: {
     goto: '{target: middle|own_base|enemy_base|own_bed|enemy_bed|shop|bronze|silver|gold|<playerName>} or {x,y,z}',
     collect: '{resource: bronze|silver|gold, seconds: 20}',
-    buy: '{item: "Sandstein", count: 3}  (count = number of purchases)',
+    buy: '{item: "Sandstone", count: 3}  (count = number of purchases)',
     bridge: '{target: middle|enemy_base|own_base} or {x,z}',
     attack: '{player?: name, seconds?: 30}',
     shoot: '{player?: name, seconds?: 20}',
@@ -1258,7 +1258,7 @@ const HELP = {
     place: '{item?, at: {x,y,z}}',
     equip: '{item}',
     eat_gapple: '{}',
-    use: '{item: Teleporter|Fallschirm|Rettungsplattform|Mobiler Shop, toward?: target for gliding}',
+    use: '{item: Teleporter|Parachute|Rescue Platform|Mobile Shop, toward?: target for gliding}',
     look: '{target}',
     chat: '{text}',
     wait: '{seconds}',

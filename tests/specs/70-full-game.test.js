@@ -357,7 +357,7 @@ module.exports = {
     // ---------------------------------------------------------------- game bossbar
     await phase('bossbar', async () => {
       const text = b => (typeof b.title === 'string' ? b.title : (b.title && b.title.toString ? b.title.toString() : JSON.stringify(b.title)))
-      const bar = () => P1.bossBars.find(b => /Spiel läuft/.test(text(b)))
+      const bar = () => P1.bossBars.find(b => /Game in progress/.test(text(b)))
       await waitFor(() => bar(), { timeout: 5000, what: 'game bossbar' }).catch(() => {})
       const h1 = bar() && bar().health
       await sleep(3200)
@@ -379,7 +379,7 @@ module.exports = {
       for (const b of halves[T2]) left.push(await hasBed(t, b.x, b.y, b.z))
       t.check('a player can NOT break their own bed', left.every(v => v === true), { left })
       t.check('no bed-destroyed message after the failed attempt on the own bed',
-        chatSince(Q, msgStart, /Bett von Team .* zerstört/).length === 0)
+        chatSince(Q, msgStart, /bed of team .* was destroyed/).length === 0)
     })
 
     // ---------------------------------------------------------------- void kill with credit, respawn, protection
@@ -401,8 +401,8 @@ module.exports = {
       t.check('void death is instant (dies right after dropping below the void-kill height)',
         !!died && died.ms < 1500 && died.y > MAP.voidY - 6 && died.y < MAP.voidY + 0.5, { ...died, voidY: MAP.voidY })
       await sleep(400)
-      const killMsg = chatSince(Q, t0, new RegExp(`${P1.username} wurde von ${Q.username} getötet! \\(❤ [\\d,]+\\)`))
-      const selfMsg = chatSince(Q, t0, new RegExp(`${P1.username}.*gestorben`))
+      const killMsg = chatSince(Q, t0, new RegExp(`${P1.username} was killed by ${Q.username}! \\(❤ [\\d.]+\\)`))
+      const selfMsg = chatSince(Q, t0, new RegExp(`${P1.username}.*died`))
       t.check('void death credits the last attacker (kill message names the attacker)', killMsg.length > 0 && selfMsg.length === 0, { killMsg, selfMsg })
 
       // respawn
@@ -427,9 +427,9 @@ module.exports = {
       let protHits = 0
       const protLimit = Date.now() + 5000
       while (Date.now() < protLimit) {
-        const one = P1.chatLog.find(c => c.t >= protStart - 500 && /Respawn Schutz wird in 1/.test(c.m))
+        const one = P1.chatLog.find(c => c.t >= protStart - 500 && /Respawn protection ends in 1s/.test(c.m))
         if (protHits >= 2 && one && Date.now() - one.t > 600) break
-        if (P1.chatLog.some(c => c.t >= protStart - 500 && /Respawn Schutz ist weg/.test(c.m))) break
+        if (P1.chatLog.some(c => c.t >= protStart - 500 && /Respawn protection is over/.test(c.m))) break
         await hit(Q, P1, 1, 450)
         protHits++
       }
@@ -437,17 +437,17 @@ module.exports = {
       const hpProt = await srvHealth(t, P1)
       t.check('respawn protection blocks damage right after respawning (server health, attacker in range)',
         inRange && hpBefore === 20 && hpProt === 20 && protHits >= 4 && protSpanHit >= 2000, { hpBefore, hpProt, protHits, hitWindowMs: protSpanHit, inRange, dist: pA && pB ? +dist3(pA, pB).toFixed(2) : null, sinceRespawnMs: Date.now() - protStart })
-      const protEnd = await waitFor(() => chatSince(P1, protStart - 500, /Respawn Schutz ist weg/).length > 0, { timeout: 7000, what: 'respawn protection end message' }).then(() => true, () => false)
-      const protMsgs = P1.chatLog.filter(c => c.t >= protStart - 500 && /Respawn Schutz/.test(c.m))
+      const protEnd = await waitFor(() => chatSince(P1, protStart - 500, /Respawn protection is over/).length > 0, { timeout: 7000, what: 'respawn protection end message' }).then(() => true, () => false)
+      const protMsgs = P1.chatLog.filter(c => c.t >= protStart - 500 && /Respawn protection/.test(c.m))
       const firstMsg = protMsgs[0]
       const lastMsg = protMsgs[protMsgs.length - 1]
       const protSpan = firstMsg && lastMsg ? lastMsg.t - firstMsg.t : null
       t.check('respawn protection counts 3, 2, 1 and ends after about 3 s',
         protEnd && /in 3/.test(protMsgs[0].m) && protMsgs.some(c => /in 2/.test(c.m)) && protMsgs.some(c => /in 1/.test(c.m)) &&
-        /ist weg/.test(lastMsg.m) && protSpan >= 1800 && protSpan <= 3500, { protSpan, msgs: protMsgs.map(c => c.m) })
+        /is over/.test(lastMsg.m) && protSpan >= 1800 && protSpan <= 3500, { protSpan, msgs: protMsgs.map(c => c.m) })
       if (!protEnd) await sleep(3000)
-      // hit every ~700 ms until damage lands (up to 5 hits); records how long after the "ist weg" message the first hit worked
-      const endAt = (protMsgs.find(c => /ist weg/.test(c.m)) || { t: Date.now() }).t
+      // hit every ~700 ms until damage lands (up to 5 hits); records how long after the "is over" message the first hit worked
+      const endAt = (protMsgs.find(c => /is over/.test(c.m)) || { t: Date.now() }).t
       const hpAfterProt = await srvHealth(t, P1)
       const attempts = []
       let hpHit = hpAfterProt
@@ -460,7 +460,7 @@ module.exports = {
         attempts.push({ afterEndMs: Date.now() - endAt, hp: hpHit, dist: a && b ? +dist3(a, b).toFixed(2) : null })
       }
       const firstDmg = attempts.find(a => a.hp < hpAfterProt)
-      t.check('after the protection ended the player takes damage again (within 1.5 s of the "ist weg" message)',
+      t.check('after the protection ended the player takes damage again (within 1.5 s of the "is over" message)',
         hpAfterProt === 20 && hpHit < hpAfterProt && hpHit > 0 && !!firstDmg && firstDmg.afterEndMs <= 1500, { before: hpAfterProt, after: hpHit, attempts })
     })
 
@@ -482,19 +482,19 @@ module.exports = {
       const gone = []
       for (const b of halves[T1]) gone.push(await isAir(t, b.x, b.y, b.z))
       t.check('the enemy bed can be broken with a pickaxe (both halves gone)', gone.length === 2 && gone.every(v => v === true), { gone, ms: dug.ms, held: P1.heldItem && P1.heldItem.name })
-      const msgs = chatSince(P1, t0, /Bett von Team .*zerstört/)
+      const msgs = chatSince(P1, t0, /bed of team .* was destroyed/)
       t.check('everybody gets the bed-destroyed chat message naming the team',
-        msgs.length > 0 && bots.every(b => chatSince(b, t0, new RegExp(`Bett von Team ${T1}.*zerstört`)).length > 0), msgs)
+        msgs.length > 0 && bots.every(b => chatSince(b, t0, new RegExp(`bed of team ${T1}.* was destroyed`)).length > 0), msgs)
       await sleep(600)
       const victimTitles = Q.titles.filter(x => x.t >= t0).map(x => x.text)
       const otherTitles = P2.titles.filter(x => x.t >= t0).map(x => x.text)
-      const bedTitle = new RegExp(`Das Bett von Team ${T1} wurde zerstört`)
+      const bedTitle = new RegExp(`The bed of team ${T1} was destroyed`)
       t.check('the victim team gets the bed-destroyed title naming its team', victimTitles.some(x => bedTitle.test(x)), victimTitles)
       t.check('other players get the bed-destroyed title naming the victim team', otherTitles.some(x => bedTitle.test(x)), otherTitles)
       t.check('the victim team gets its own subtitle (not the one for the other players)',
-        victimTitles.some(x => /nie wieder vertrieben/.test(x)) && !victimTitles.some(x => /nicht mehr respawnen/.test(x)), victimTitles)
+        victimTitles.some(x => /You will no longer respawn/.test(x)) && !victimTitles.some(x => /can no longer respawn/.test(x)), victimTitles)
       t.check('other players get the "cannot respawn anymore" subtitle (not the victim one)',
-        otherTitles.some(x => /nicht mehr respawnen/.test(x)) && !otherTitles.some(x => /nie wieder vertrieben/.test(x)), otherTitles)
+        otherTitles.some(x => /can no longer respawn/.test(x)) && !otherTitles.some(x => /You will no longer respawn/.test(x)), otherTitles)
     })
 
     // Q destroys the bed of P1/P2's team too, so the next death of either is final
@@ -508,7 +508,7 @@ module.exports = {
       const gone = []
       for (const b of halves[T2]) gone.push(await isAir(t, b.x, b.y, b.z))
       t.check('the second team bed is destroyed by the other bot (both halves)', gone.length === 2 && gone.every(v => v === true), { gone, ms: dug.ms })
-      t.check('bed-destroyed message for the second team', chatSince(P2, t0, new RegExp(`Bett von Team ${T2}.*zerstört`)).length > 0)
+      t.check('bed-destroyed message for the second team', chatSince(P2, t0, new RegExp(`bed of team ${T2}.* was destroyed`)).length > 0)
     })
 
     // ---------------------------------------------------------------- final kill -> spectator
@@ -524,7 +524,7 @@ module.exports = {
       const died = await voidDrop(t, P2, voidX, voidZ)
       t.check('a player without a bed dies in the void', !!died, died)
       await sleep(1800)
-      const killMsg = chatSince(Q, t0, new RegExp(`${P2.username} wurde von ${Q.username} getötet! \\(❤ [\\d,]+\\)`))
+      const killMsg = chatSince(Q, t0, new RegExp(`${P2.username} was killed by ${Q.username}! \\(❤ [\\d.]+\\)`))
       t.check('the final kill is credited to the attacker', killMsg.length > 0, killMsg)
       t.check('after the final death the player is a spectator (not respawned on the island)',
         P2.game.gameMode === 'spectator' && hd(pos(P2), sp) > 20,
@@ -538,7 +538,7 @@ module.exports = {
       const gm = await t.server.cmd(`data get entity ${P2.username} playerGameType`)
       t.check('the server has the final-kill victim in spectator mode (gamemode 3)', /: 3\b/.test(gm), gm)
       t.check('the game goes on while two teams are alive (no win/game-over message yet, others still alive in survival)',
-        bots.every(b => chatSince(b, t0, /hat das Spiel in .* gewonnen|Spiel vorbei/).length === 0) &&
+        bots.every(b => chatSince(b, t0, /won the game in |Game over/).length === 0) &&
         [P1, Q].every(b => b.game.gameMode === 'survival' && b.isAlive))
       const b = MAP.bounds
       const inArena = p => p.x >= b.min[0] && p.x <= b.max[0] && p.z >= b.min[2] && p.z <= b.max[2] && p.y >= MAP.voidY
@@ -563,18 +563,18 @@ module.exports = {
       await hit(P1, Q, 2, 650, false)
       const died = await voidDrop(t, Q, voidX, voidZ)
       t.check('the last enemy dies in the void', !!died, died)
-      await waitFor(() => chatSince(P1, winStart, /gewonnen/).length > 0, { timeout: 8000, what: 'win message' }).catch(() => {})
+      await waitFor(() => chatSince(P1, winStart, /won the game/).length > 0, { timeout: 8000, what: 'win message' }).catch(() => {})
       await sleep(600)
-      const winMsg = chatSince(P1, winStart, /hat das Spiel in .* gewonnen/)
+      const winMsg = chatSince(P1, winStart, /won the game in /)
       t.check('the winner message is broadcast and names the winning team', winMsg.length > 0 && winMsg[0].includes(`Team ${T2} `), winMsg)
-      const m = winMsg[0] && /in (\d+):(\d+) gewonnen/.exec(winMsg[0])
+      const m = winMsg[0] && /in (\d+):(\d+)/.exec(winMsg[0])
       const reported = m ? Number(m[1]) * 60 + Number(m[2]) : null
       const real = (Date.now() - gameStartedAt) / 1000
       t.check('the reported game time matches the real game duration (+-5 s)', reported != null && Math.abs(reported - real) <= 5, { reported, realSec: +real.toFixed(1) })
       const p1Titles = P1.titles.filter(x => x.t >= winStart).map(x => x.text)
       const qTitles = Q.titles.filter(x => x.t >= winStart).map(x => x.text)
-      t.check('winners get the win title (and not the lost title)', p1Titles.some(x => /Dein Team hat gewonnen/.test(x)) && !p1Titles.some(x => /Dein Team hat verloren/.test(x)), p1Titles)
-      t.check('losers get the lost title (and not the win title)', qTitles.some(x => /Dein Team hat verloren/.test(x)) && !qTitles.some(x => /Dein Team hat gewonnen/.test(x)), qTitles)
+      t.check('winners get the win title (and not the lost title)', p1Titles.some(x => /Your team won/.test(x)) && !p1Titles.some(x => /Your team lost/.test(x)), p1Titles)
+      t.check('losers get the lost title (and not the win title)', qTitles.some(x => /Your team lost/.test(x)) && !qTitles.some(x => /Your team won/.test(x)), qTitles)
     })
 
     // ---------------------------------------------------------------- end, rebuild, back to lobby
@@ -584,7 +584,7 @@ module.exports = {
       const t0 = Date.now()
       const ok = await waitFor(() => bots.every(inLobby), { timeout: 40000, what: 'all players back in the lobby' }).then(() => true, () => false)
       t.check('all players are put back into the lobby after the game', ok, { ms: Date.now() - t0, lobby: fmt(L), pos: bots.map(b => `${b.username}@${fmt(pos(b))}`) })
-      t.check('the game-over message is shown', bots.some(b => chatSince(b, winStart, /Spiel vorbei/).length > 0), bots.map(b => chatSince(b, winStart, /Spiel vorbei|zurückgesetzt/)))
+      t.check('the game-over message is shown', bots.some(b => chatSince(b, winStart, /Game over/).length > 0), bots.map(b => chatSince(b, winStart, /Game over|being reset/)))
       await sleep(1500)
       t.check('back in the lobby everybody is in survival or adventure mode (nobody spectator/creative)', bots.every(b => ['survival', 'adventure'].includes(b.game.gameMode)), bots.map(b => b.game.gameMode))
     })

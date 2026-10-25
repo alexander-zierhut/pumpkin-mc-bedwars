@@ -1,4 +1,4 @@
-// Economy: resource spawners (Bronze / Silber / Gold), item names, holograms, pickup, pile-up.
+// Economy: resource spawners (Bronze / Iron / Gold), item names, holograms, pickup, pile-up.
 //
 // Map-data-driven: nothing about coordinates, teams, spawner counts or rates is hardcoded. The spec reads
 //   - the arena file of the arena the test server runs (config/arena-*.yml, the active arena of config/bedwars.yml or
@@ -248,9 +248,9 @@ module.exports = {
 
     // ---------------------------------------------------------------- configured names
     // Independent of the config files (which the test would otherwise just echo back): Rewinside's three currencies.
-    const CANON = { bronze: { name: 'Bronze', item: 'brick', color: '4' }, silver: { name: 'Silber', item: 'iron_ingot', color: '7' }, gold: { name: 'Gold', item: 'gold_ingot', color: '6' } }
-    t.check('currencies are the Rewinside ones: Bronze (brick, \u00a74), Silber (iron ingot, \u00a77), Gold (gold ingot, \u00a76), no other resource', Object.keys(RES).every(k => CANON[k]) && Object.values(RES).every(r => r.display === CANON[r.type].name && r.item === CANON[r.type].item && r.color === CANON[r.type].color), Object.values(RES).map(r => ({ type: r.type, display: r.display, item: r.item, color: r.color })))
-    t.check('every resource has a German display name (override or config) that is not an English/default fallback ("Iron", "Eisen", "Brick", "Ziegel", "Gold ingot")', Object.values(RES).every(r => r.display && !/^(iron|eisen|brick|ziegel|gold ingot|goldbarren)$/i.test(r.display)), Object.values(RES).map(r => ({ type: r.type, display: r.display })))
+    const CANON = { bronze: { name: 'Bronze', item: 'brick', color: '4' }, silver: { name: 'Iron', item: 'iron_ingot', color: '7' }, gold: { name: 'Gold', item: 'gold_ingot', color: '6' } }
+    t.check('currencies are the Rewinside ones: Bronze (brick, \u00a74), Iron (iron ingot, \u00a77), Gold (gold ingot, \u00a76), no other resource', Object.keys(RES).every(k => CANON[k]) && Object.values(RES).every(r => r.display === CANON[r.type].name && r.item === CANON[r.type].item && r.color === CANON[r.type].color), Object.values(RES).map(r => ({ type: r.type, display: r.display, item: r.item, color: r.color })))
+    t.check('every resource has a configured display name (Bronze / Iron / Gold) that is not a default item-name fallback ("Brick", "Iron Ingot", "Gold Ingot")', Object.values(RES).every(r => r.display && !/^(brick|iron ingot|gold ingot)$/i.test(r.display)), Object.values(RES).map(r => ({ type: r.type, display: r.display })))
 
     // ---------------------------------------------------------------- sampling window
     const w0 = gameStart + 3000
@@ -401,11 +401,11 @@ module.exports = {
     const rawLeaks = [...holos.values()].flatMap(h => h.hist.map(x => x.raw)).filter(r => /[&%]|null|undefined/.test(r))
     t.check('no hologram text contains raw & codes, %placeholders% or null', rawLeaks.length === 0, { rawLeaks: [...new Set(rawLeaks)].slice(0, 6) })
 
-    // interval-1 resources show the static subtitle "jede Sekunde"
+    // interval-1 resources show the static subtitle "every second"
     const everySecond = SPAWNERS.filter(s => s.res.interval === 1)
     if (everySecond.length) {
       const subs = everySecond.map(s => holoReport[s.key].sub)
-      t.check('hologram sub line of the 1 s resources says "jede Sekunde"', subs.every(sub => sub.length > 0 && sub.every(x => plain(x) === 'jede Sekunde')), { subs })
+      t.check('hologram sub line of the 1 s resources says "every second"', subs.every(sub => sub.length > 0 && sub.every(x => plain(x) === 'every second')), { subs })
     }
 
     // countdown holograms for slower resources: sequence N..1 then reset to the interval, reset coincides with the drop
@@ -431,7 +431,7 @@ module.exports = {
       const atOne = plain((seq.find(x => x.v === 1) || {}).raw)
       t.log(`${s.key} hologram sequence (s after game start: value): ${seq.slice(0, 40).map(x => `${round((x.t - gameStart) / 1000, 1)}:${x.v}`).join(' ')}`)
       t.log(`${s.key} hologram at 1: "${atOne}"`)
-      t.check(`${s.key} hologram at 1 is grammatical German (not "1 Sekunden")`, !/\b1 Sekunden/.test(atOne), { atOne })
+      t.check(`${s.key} hologram at 1 is grammatical English (not "1 seconds")`, !/\b1 seconds/.test(atOne), { atOne })
       t.check(`${s.key} countdown hologram counts down by 1 each step and resets to ${interval}`, seq.length > interval && bad.length === 0, { steps: seq.length, bad: bad.slice(0, 5), texts })
       t.check(`${s.key} countdown ticks once per second`, stepGaps.length > 5 && round(median(stepGaps), 0) >= 900 && median(stepGaps) <= 1100, { medianStepMs: median(stepGaps) })
       t.check(`${s.key} countdown reset coincides with the item drop (+-1.2 s)`, resets.length >= 1 && offsets.every(o => o < 1200), { resets: resets.length, offsetsMs: offsets })

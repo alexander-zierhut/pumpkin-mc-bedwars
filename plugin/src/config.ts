@@ -136,7 +136,7 @@ export interface ShopItem {
 export interface ShopCategory { icon: Item, items: ShopItem[] }
 export interface Shop {
   categories: ShopCategory[]
-  /** Items shown on the main page below the categories (Schnellkauf). */
+  /** Items shown on the main page below the categories (Quick Buy). */
   quickBuy: ShopItem[]
 }
 

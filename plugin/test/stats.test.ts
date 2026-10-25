@@ -24,12 +24,12 @@ test('stats survive a restart (data/stats.yml)', () => {
   assert.equal(new Stats(p).get('Alex').kills, 1)
 })
 
-test('the /bw stats answer is German with K/D', () => {
+test('the /bw stats answer is English with K/D', () => {
   const s = new Stats(dataOnly())
   s.kill('Bea'); s.kill('Bea'); s.kill('Bea'); s.death('Bea'); s.death('Bea')
   const lines = s.lines('Bea').map(l => l.replace(/§./g, ''))
-  assert.equal(lines[0], 'Statistiken von Spieler Bea:')
-  assert.ok(lines.includes('Kills: 3') && lines.includes('Tode: 2') && lines.includes('K/D: 1.5'))
+  assert.equal(lines[0], 'Stats of player Bea:')
+  assert.ok(lines.includes('Kills: 3') && lines.includes('Deaths: 2') && lines.includes('K/D: 1.5'))
 })
 
 test('an unknown or broken stats file starts empty', () => {

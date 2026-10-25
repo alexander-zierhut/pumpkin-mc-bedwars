@@ -1,7 +1,7 @@
-// Special items: Teleporter, Fallschirm (+ the Rewinside combo), Mobiler Shop, Rettungsplattform, TNT, Enderperle, Teamkiste,
+// Special items: Teleporter, Parachute (+ the Rewinside combo), Mobile Shop, Rescue Platform, TNT, Ender Pearl, Team Chest,
 // and that none of them work in the lobby or for non-playing spectators. One game, five bots (the last one joins late as spectator).
 //
-//   ItemA  economy / shop bot: collects one Bronze/Silber/Gold from the spawners, buys every special in the real shop
+//   ItemA  economy / shop bot: collects one Bronze/Iron/Gold from the spawners, buys every special in the real shop
 //   ItemB, ItemC, ItemD  rocket/parachute test pilot (B), bow shooter (an enemy of B), enemy for TNT / chest
 //   ItemE  late joiner = spectator
 //
@@ -209,7 +209,7 @@ module.exports = {
       await sleep(5500)
       const moved = a.entity.position.distanceTo(base)
       t.check('lobby: Teleporter does nothing (no countdown, no launch, rocket kept)',
-        chatSince(a, t0, /Teleport|Sekunden|Nicht bewegen/i).length === 0 && moved < 1.5 && countItem(a, 'firework_rocket') === 2,
+        chatSince(a, t0, /Teleport|seconds|Do not move/i).length === 0 && moved < 1.5 && countItem(a, 'firework_rocket') === 2,
         { moved: r2(moved), rockets: countItem(a, 'firework_rocket'), chat: chatSince(a, t0, /./) })
 
       await give(t, a, 'chicken_spawn_egg', 1)
@@ -222,8 +222,8 @@ module.exports = {
       await sleep(1200)
       const chickens = await count(t, '@e[type=chicken]')
       await tp(t, a, LOBBY.x, LOBBY.y, LOBBY.z)
-      t.check('lobby: Fallschirm does nothing in the air (no chicken, egg kept)',
-        airborne && chickens === 0 && countItem(a, 'chicken_spawn_egg') === 1 && chatSince(a, t0, /Fallschirm|Luft/i).length === 0,
+      t.check('lobby: Parachute does nothing in the air (no chicken, egg kept)',
+        airborne && chickens === 0 && countItem(a, 'chicken_spawn_egg') === 1 && chatSince(a, t0, /Parachute|air/i).length === 0,
         { airborne, chickens, eggs: countItem(a, 'chicken_spawn_egg') })
 
       await sleep(1500)
@@ -234,8 +234,8 @@ module.exports = {
       await a.lookAt(floor.position.offset(0.5, 1, 0.5), true)
       await a._genericPlace(floor, new Vec3(0, 1, 0), { swingArm: 'right' })
       await sleep(1500)
-      const shopVillagers = await count(t, '@e[type=villager,name="Mobiler Shop"]')
-      t.check('lobby: Mobiler Shop does not spawn a shop villager', shopVillagers === 0, { shopVillagers, armorStandsBefore: stands0, armorStandsAfter: await countNear(t, a, 'armor_stand', 8) })
+      const shopVillagers = await count(t, '@e[type=villager,name="Mobile Shop"]')
+      t.check('lobby: Mobile Shop does not spawn a shop villager', shopVillagers === 0, { shopVillagers, armorStandsBefore: stands0, armorStandsAfter: await countNear(t, a, 'armor_stand', 8) })
       await t.server.cmd(`clear ${a.username}`)
     }
 
@@ -285,7 +285,7 @@ module.exports = {
     const e = await t.bot('ItemE')
     await waitFor(() => dist2(e.entity.position, MAP.specSpawn) < 10, { timeout: 20000, what: 'spectator to be at the spectator spawn' }).catch(() => {})
 
-    // a spot in the void for the Rettungsplattform / pearl landing platform (nothing solid within 12 blocks horizontally, from 40 below to 60 above walk level)
+    // a spot in the void for the Rescue Platform / pearl landing platform (nothing solid within 12 blocks horizontally, from 40 below to 60 above walk level)
     const findVoid = async () => {
       const mid = { x: (MAP.teams[TEAMS[0]].spawn.x + MAP.teams[TEAMS[1]].spawn.x) / 2, z: (MAP.teams[TEAMS[0]].spawn.z + MAP.teams[TEAMS[1]].spawn.z) / 2 }
       for (const off of [30, -30, 45, -45, 60, -60]) {
@@ -339,7 +339,7 @@ module.exports = {
         const r = recorder(p)
         let t0 = Date.now()
         await rightClick(p)
-        await waitFor(() => chatSince(p, t0, /Teleport in/).length, { timeout: 3000, what: 'countdown message' })
+        await waitFor(() => chatSince(p, t0, /Teleporting in/).length, { timeout: 3000, what: 'countdown message' })
         await sleep(1000)
         p.setControlState('forward', true)
         await sleep(700)
@@ -349,7 +349,7 @@ module.exports = {
         r.stop()
         const maxY = Math.max(...r.samples.map(s => s.y))
         t.check('Teleporter: walking to another block cancels it (message, no launch, rocket kept)',
-          chatSince(p, t0, /abgebrochen/).length === 1 && maxY < homeP.y + 1 && countItem(p, 'firework_rocket') === 3,
+          chatSince(p, t0, /cancelled/).length === 1 && maxY < homeP.y + 1 && countItem(p, 'firework_rocket') === 3,
           { chat: chatSince(p, t0, /./), maxY: r1(maxY), rockets: countItem(p, 'firework_rocket'), movedBlocks: r1(dist2(movedTo, homeP)) })
 
         // ---------------- blocks above: refused, and placing one during the countdown cancels it
@@ -363,21 +363,21 @@ module.exports = {
         rRef.stop()
         const maxYRef = Math.max(...rRef.samples.map(s => s.y))
         t.check('Teleporter: refused when a block is above you (message, rocket kept, no launch)',
-          chatSince(p, t0, /Über dir|Blöcke/).length >= 1 && chatSince(p, t0, /Teleport in/).length === 0 && countItem(p, 'firework_rocket') === 3 && maxYRef < homeP.y + 1,
+          chatSince(p, t0, /above you/).length >= 1 && chatSince(p, t0, /Teleporting in/).length === 0 && countItem(p, 'firework_rocket') === 3 && maxYRef < homeP.y + 1,
           { chat: chatSince(p, t0, /./), rockets: countItem(p, 'firework_rocket'), maxY: r1(maxYRef) })
         await t.server.cmd(`setblock ${hx} ${WALK_Y + 2} ${hz} minecraft:air`)
 
         const r2s = recorder(p)
         t0 = Date.now()
         await rightClick(p)
-        await waitFor(() => chatSince(p, t0, /Teleport in/).length, { timeout: 3000, what: 'countdown message' })
+        await waitFor(() => chatSince(p, t0, /Teleporting in/).length, { timeout: 3000, what: 'countdown message' })
         await sleep(1200)
         await t.server.cmd(`setblock ${hx} ${WALK_Y + 3} ${hz} minecraft:stone`)
         await sleep(4500)
         r2s.stop()
         const maxY3 = Math.max(...r2s.samples.map(s => s.y))
         t.check('Teleporter: a block placed above you during the countdown cancels it',
-          chatSince(p, t0, /Über dir|Blöcke/).length >= 1 && maxY3 < homeP.y + 1 && countItem(p, 'firework_rocket') === 3,
+          chatSince(p, t0, /above you/).length >= 1 && maxY3 < homeP.y + 1 && countItem(p, 'firework_rocket') === 3,
           { chat: chatSince(p, t0, /./), maxY: r1(maxY3), rockets: countItem(p, 'firework_rocket') })
         await t.server.cmd(`setblock ${hx} ${WALK_Y + 3} ${hz} minecraft:air`)
 
@@ -385,15 +385,15 @@ module.exports = {
         await toHome()
         t0 = Date.now()
         await rightClick(p)
-        await waitFor(() => chatSince(p, t0, /Teleport in/).length, { timeout: 3000, what: 'countdown message' })
+        await waitFor(() => chatSince(p, t0, /Teleporting in/).length, { timeout: 3000, what: 'countdown message' })
         await sleep(500)
         await rightClick(p)
         await sleep(600)
-        const again = chatSince(p, t0, /bereits/).length
+        const again = chatSince(p, t0, /already/).length
         // let this one run out by walking away
         p.setControlState('forward', true); await sleep(500); p.setControlState('forward', false)
         await sleep(600)
-        t.check('Teleporter: a second click during the countdown is refused ("bereits")', again === 1 && countItem(p, 'firework_rocket') === 3, { chat: chatSince(p, t0, /./), rockets: countItem(p, 'firework_rocket') })
+        t.check('Teleporter: a second click during the countdown is refused ("already")', again === 1 && countItem(p, 'firework_rocket') === 3, { chat: chatSince(p, t0, /./), rockets: countItem(p, 'firework_rocket') })
         await toHome()
       }
 
@@ -408,7 +408,7 @@ module.exports = {
         const r = recorder(p)
         const t0 = Date.now()
         await rightClick(p)
-        await waitFor(() => chatSince(p, t0, /Teleport in/).length, { timeout: 3000, what: 'countdown message' })
+        await waitFor(() => chatSince(p, t0, /Teleporting in/).length, { timeout: 3000, what: 'countdown message' })
         // turning the head must not cancel (same block)
         await sleep(900)
         await p.look(1.0, 0.3, true)
@@ -442,7 +442,7 @@ module.exports = {
           Math.abs(p.entity.position.y - homeP.y) < 1.5, { y: r1(p.entity.position.y) })
       }
 
-      // ---------------- Fallschirm: refused on the ground
+      // ---------------- Parachute: refused on the ground
       if (want('chute')) {
         await toHome()
         await sleep(300)
@@ -451,8 +451,8 @@ module.exports = {
         const t0 = Date.now()
         await rightClick(p)
         await sleep(1200)
-        t.check('Fallschirm: refused on the ground (message, egg kept, no chicken)',
-          chatSince(p, t0, /in der Luft/).length === 1 && countItem(p, 'chicken_spawn_egg') === eggs0 && (await countNear(t, p, 'chicken', 8)) === 0,
+        t.check('Parachute: refused on the ground (message, egg kept, no chicken)',
+          chatSince(p, t0, /in the air/).length === 1 && countItem(p, 'chicken_spawn_egg') === eggs0 && (await countNear(t, p, 'chicken', 8)) === 0,
           { chat: chatSince(p, t0, /./), eggs: countItem(p, 'chicken_spawn_egg') })
 
         // control: without parachute this drop hurts, so "no damage with the parachute" means something
@@ -464,7 +464,7 @@ module.exports = {
         const hpControl = await health(t, p)
         t.log('control fall of ~11 blocks without parachute: health', hpControl)
         state.fallDamageWorks = hpControl < 20
-        t.check('Fallschirm control: a fall of ~11 blocks without parachute does damage (so "no damage with the parachute" is meaningful)', state.fallDamageWorks, { hpAfterControlFall: hpControl })
+        t.check('Parachute control: a fall of ~11 blocks without parachute does damage (so "no damage with the parachute" is meaningful)', state.fallDamageWorks, { hpAfterControlFall: hpControl })
         await t.server.cmd(`effect give ${p.username} minecraft:instant_health 1 10 true`)
         await sleep(600)
 
@@ -506,24 +506,24 @@ module.exports = {
         const chickenAfter = await countNear(t, p, 'chicken', 8)
         const drops = await chickenDrops(t)
         t.log('glide trajectory', r.traj(t1, 500))
-        t.check('Fallschirm: opens in the air, consumes the egg, a chicken rides on the player',
+        t.check('Parachute: opens in the air, consumes the egg, a chicken rides on the player',
           chickenWhileOpen === 1 && /Test passed/i.test(ridingServer) && countItem(p, 'chicken_spawn_egg') === 5, { chicken: chickenWhileOpen, riding: ridingServer, eggs: countItem(p, 'chicken_spawn_egg') })
-        t.check(`Fallschirm: glides ~${CHUTE.speed} blocks/tick in the view direction (config parachute.horizontal-speed)`,
+        t.check(`Parachute: glides ~${CHUTE.speed} blocks/tick in the view direction (config parachute.horizontal-speed)`,
           horiz > CHUTE.speed * 0.93 && horiz < CHUTE.speed * 1.07 && along > 0.97 * horiz,
           { horizontalPerTick: r2(horiz), alongViewPerTick: r2(along), dx: r1(dx), dz: r1(dz), ticks })
-        t.check('Fallschirm: sinks slowly (well below free fall) while gliding',
+        t.check('Parachute: sinks slowly (well below free fall) while gliding',
           dyPerTick < 0 && dyPerTick > -0.5 && sink > CHUTE.sink * 0.95 && sink < CHUTE.sink * 1.6, { glideDyPerTick: r2(dyPerTick), sinkPerTickWhileStraightDown: r2(sink) })
-        t.check('Fallschirm: looking straight down stops the sideways movement and lands on the island', (() => {
+        t.check('Parachute: looking straight down stops the sideways movement and lands on the island', (() => {
           const later = r.samples.filter(s => s.t >= t1 + 5000 && s.t <= tLand)
           return Math.hypot(later[later.length - 1].x - later[0].x, later[later.length - 1].z - later[0].z) < 3 && dist2(p.entity.position, homeP) < 12
         })(), { midPos: [r1(midPos.x), r1(midPos.y), r1(midPos.z)], landed: [r1(p.entity.position.x), r1(p.entity.position.y), r1(p.entity.position.z)] })
-        t.check('Fallschirm: no fall damage on landing, chicken removed, no chicken drops',
+        t.check('Parachute: no fall damage on landing, chicken removed, no chicken drops',
           hpAfter >= hpBefore && chickenAfter === 0 && drops === 0, { hpBefore, hpAfter, chickenAfter, drops, controlFallWithoutChuteHealth: hpControl, fallDamageWorksWithoutChute: state.fallDamageWorks })
         const eggsNow = countItem(p, 'chicken_spawn_egg')
-        t.check('Fallschirm: egg count is 5 after one use', eggsNow === 5, { eggs: eggsNow })
+        t.check('Parachute: egg count is 5 after one use', eggsNow === 5, { eggs: eggsNow })
       }
 
-      // ---------------- Fallschirm: breaks after parachute.duration-seconds
+      // ---------------- Parachute: breaks after parachute.duration-seconds
       if (want('expire')) {
         // as high as the world allows, looking straight down (sink only): after the configured lifetime the player is still above the island
         await tp(t, p, homeP.x, 312, homeP.z)
@@ -553,12 +553,12 @@ module.exports = {
         r.stop()
         const lifetime = tBreak ? (tBreak - t1) / 1000 : null
         t.log('expire trajectory', r.traj(t1, 3000))
-        t.check(`Fallschirm: breaks after ${CHUTE.seconds} s (message, chicken gone, player falls on)`,
-          lifetime !== null && lifetime > CHUTE.seconds - 0.8 && lifetime < CHUTE.seconds + 1.2 && chatSince(p, t1, /kaputt/).length === 1 && vyAfter < -0.4 && yAtBreak > WALK_Y + 2,
-          { lifetimeSeconds: lifetime && r2(lifetime), yAtBreak: r1(yAtBreak), vyAfter: r2(vyAfter), chat: chatSince(p, t1, /kaputt/) })
+        t.check(`Parachute: breaks after ${CHUTE.seconds} s (message, chicken gone, player falls on)`,
+          lifetime !== null && lifetime > CHUTE.seconds - 0.8 && lifetime < CHUTE.seconds + 1.2 && chatSince(p, t1, /broke/).length === 1 && vyAfter < -0.4 && yAtBreak > WALK_Y + 2,
+          { lifetimeSeconds: lifetime && r2(lifetime), yAtBreak: r1(yAtBreak), vyAfter: r2(vyAfter), chat: chatSince(p, t1, /broke/) })
       }
 
-      // ---------------- Fallschirm: shot down by a bow arrow
+      // ---------------- Parachute: shot down by a bow arrow
       if (want('shot')) {
         // The shooter (an enemy of the pilot) stands on a stone block 5 blocks to the side, ~6 blocks above the chicken (so the arrow clears his block),
         // with the bow fully drawn. The pilot looks straight down, so the chicken only sinks (0.29 b/tick). The shooter leads the target using the
@@ -610,7 +610,7 @@ module.exports = {
           const hpPilot0 = await health(t, p)
           q.deactivateItem()
           await sleep(700)
-          shotDown = chatSince(p, t1, /abgeschossen/).length === 1
+          shotDown = chatSince(p, t1, /shot down/).length === 1
           const hpPilot1 = await health(t, p)
           attempts.push({ hpPilot: [hpPilot0, hpPilot1], arrowHitPilotInstead: hpPilot1 < hpPilot0, factor, shooterFeetY: py, chicken: [r1(cp.x), r1(cp.y), r1(cp.z)], dist: r1(dist), aimY: r1(aim.y), arrowsBefore, hit: shotDown })
           await sleep(300)
@@ -620,7 +620,7 @@ module.exports = {
         const drops = await chickenDrops(t)
         if (p.isAlive === false || p.entity.position.y > homeP.y + 3 && (await health(t, p)) <= 0) await waitRespawn(t, p, tp0)
         t.log('shot attempts', attempts)
-        t.check('Fallschirm: a real bow arrow hits the chicken and ends the parachute (message, chicken gone, no drops)',
+        t.check('Parachute: a real bow arrow hits the chicken and ends the parachute (message, chicken gone, no drops)',
           shotDown && chickensLeft === 0 && drops === 0,
           { shotDown, chickensLeft, chickenDrops: drops, arrowsPassedThroughToPilot: attempts.filter(x => x.arrowHitPilotInstead).length, attempts })
         await toHome()
@@ -630,7 +630,7 @@ module.exports = {
         await tp(t, q, hq.x, hq.y, hq.z)
       }
 
-      // ---------------- Fallschirm: sneaking cancels it, the player drops
+      // ---------------- Parachute: sneaking cancels it, the player drops
       if (want('sneak')) {
         // (the pilot of the scenario before may still be falling to his death: wait until he is alive at home, his death clears the inventory)
         await waitFor(() => p.isAlive !== false, { timeout: 15000, what: 'pilot alive' }).catch(() => {})
@@ -658,14 +658,14 @@ module.exports = {
         const vyAfter = Math.min(...r.samples.filter(x => x.t > tSneak + 300).map(x => x.vy))
         r.stop()
         const drops = await chickenDrops(t)
-        t.check('Fallschirm: sneaking ends it (chicken gone, no drops, no "abgeschossen"), the player drops with normal gravity',
-          goneMs < 1500 && drops === 0 && chatSince(p, t1, /abgeschossen/).length === 0 && countItem(p, 'chicken_spawn_egg') === eggs0 - 1 && vyAfter < -0.5 && vyGlide > -0.5,
+        t.check('Parachute: sneaking ends it (chicken gone, no drops, no "shot down"), the player drops with normal gravity',
+          goneMs < 1500 && drops === 0 && chatSince(p, t1, /shot down/).length === 0 && countItem(p, 'chicken_spawn_egg') === eggs0 - 1 && vyAfter < -0.5 && vyGlide > -0.5,
           { goneMs, drops, vyGlide: r2(vyGlide), vyAfter: r2(vyAfter), eggs: countItem(p, 'chicken_spawn_egg'), chat: chatSince(p, t1, /./) })
         await toHome()
         await t.server.cmd(`effect give ${p.username} minecraft:instant_health 1 10 true`)
       }
 
-      // ---------------- Fallschirm: shooting a bow from it keeps it open (air support)
+      // ---------------- Parachute: shooting a bow from it keeps it open (air support)
       if (want('ownshot')) {
         // (the pilot dropped by the sneak scenario may still die from the fall distance he carried home, /tp keeps it)
         await waitFor(() => p.isAlive !== false, { timeout: 15000, what: 'pilot alive' }).catch(() => {})
@@ -693,8 +693,8 @@ module.exports = {
           await sleep(600)
         }
         const chickens = await countNear(t, p, 'chicken', 6)
-        t.check('Fallschirm: three shots from the parachute do not shoot it down (arrows used, chicken still on the player, no message)',
-          chickens === 1 && chatSince(p, t1, /abgeschossen/).length === 0 && countItem(p, 'arrow') <= arrows0 - 2,
+        t.check('Parachute: three shots from the parachute do not shoot it down (arrows used, chicken still on the player, no message)',
+          chickens === 1 && chatSince(p, t1, /shot down/).length === 0 && countItem(p, 'arrow') <= arrows0 - 2,
           { chickens, arrowsBefore: arrows0, arrowsAfter: countItem(p, 'arrow'), shots, chat: chatSince(p, t1, /./) })
         // (a teleport during the glide would be followed by the glide velocity for a few more ticks: end it by sneaking first)
         p.setControlState('sneak', true)
@@ -765,7 +765,7 @@ module.exports = {
       await waitFor(() => a.currentWindow, { timeout: 5000, what: 'shop window' })
       await sleep(400)
       const cat = a.currentWindow.slots.findIndex(x => x && itemName(x).includes('Extras'))
-      const extrasShown = () => a.currentWindow && a.currentWindow.slots.some(x => x && itemName(x).includes('Teamkiste'))
+      const extrasShown = () => a.currentWindow && a.currentWindow.slots.some(x => x && itemName(x).includes('Team Chest'))
       // (a click that lands while the shop window is still being filled is lost now and then: click again once)
       for (let attempt = 0; attempt < 2 && !extrasShown(); attempt++) {
         await a.clickWindow(cat, 0, 0)
@@ -777,7 +777,7 @@ module.exports = {
         const slot = win().slots.findIndex(x => x && itemName(x).includes(name))
         for (let k = 0; k < n; k++) { await a.clickWindow(slot, 0, 0); await sleep(450) }
       }
-      const plan = [['Rettungsplattform', 2], ['TNT', 1], ['Teamkiste', 1], ['Teleporter', 1], ['Fallschirm', 1], ['Mobiler Shop', 1], ['Enderperle', 1]]
+      const plan = [['Rescue Platform', 2], ['TNT', 1], ['Team Chest', 1], ['Teleporter', 1], ['Parachute', 1], ['Mobile Shop', 1], ['Ender Pearl', 1]]
       for (const [n, k] of plan) await buy(n, k)
       await sleep(600)
       await a.closeWindow(a.currentWindow)
@@ -786,13 +786,13 @@ module.exports = {
       const have = { fireworks: countItem(a, 'firework_rocket'), spawn_egg: countItem(a, 'chicken_spawn_egg'), armor_stand: countItem(a, 'armor_stand'), nether_star: countItem(a, 'nether_star'), tnt: countItem(a, 'tnt'), ender_chest: countItem(a, 'ender_chest'), ender_pearl: countItem(a, 'ender_pearl') }
       t.check('shop: every special is purchasable and arrives as the right item',
         have.fireworks === 1 && have.spawn_egg === 1 && have.armor_stand === 1 && have.nether_star === 2 && have.tnt === 1 && have.ender_chest === 1 && have.ender_pearl === 1, have)
-      t.check('shop: prices charged match the shop (22 Silber, 28 Gold)', spent.silver === 22 && spent.gold === 6 + 5 + 1 + 2 + 14, spent)
+      t.check('shop: prices charged match the shop (22 Iron, 28 Gold)', spent.silver === 22 && spent.gold === 6 + 5 + 1 + 2 + 14, spent)
       const specials = a.inventory.items().filter(i => !['brick', 'iron_ingot', 'gold_ingot'].includes(i.name))
       const rawCodes = specials.filter(i => /&[0-9a-fk-or]/i.test(itemName(i)))
       t.check('shop: item names show colours, no raw "&" codes', rawCodes.length === 0, specials.map(i => itemName(i)))
     }
 
-    // ============================================================== THE COMBO: Teleporter + Fallschirm
+    // ============================================================== THE COMBO: Teleporter + Parachute
     if (want('combo')) {
       await tp(t, a, FA.home.x, FA.home.y, FA.home.z)
       await sleep(800)
@@ -830,7 +830,7 @@ module.exports = {
       const along = (posEnd.x - posOpen.x) * gd.x + (posEnd.z - posOpen.z) * gd.z
       t.log('combo trajectory (launch at t=' + r2((tLaunch - t0) / 1000) + 's)', r.traj(t0, 1000, 0, 30000))
       t.log('combo server positions (s since open, y, x, z)', JSON.stringify(serverSamples))
-      t.check('combo: Teleporter + Fallschirm: no teleport home, player stays high',
+      t.check('combo: Teleporter + Parachute: no teleport home, player stays high',
         forcedAfterLaunch.length === 0 && peak < FA.home.y + 150 && posEnd.y > MAP.voidY + 5 && chickenOpen === 1,
         { forcedMoves: forcedAfterLaunch.length, openedAtY: r1(yOpen), peakY: r1(peak), yAfterGlide: r1(posEnd.y), chickenWhileGliding: chickenOpen })
       const longWay = CHUTE.speed * 20 * GLIDE_S * 0.95
@@ -846,7 +846,7 @@ module.exports = {
       t.check('combo: landing on the island afterwards removes the chicken', chickenEnd === 0, { chickens: chickenEnd })
     }
 
-    // ============================================================== Mobiler Shop
+    // ============================================================== Mobile Shop
     if (want('mobile')) {
       const blocked = FA.cell(3, -6); const free = FA.cell(3, -3); const standAt = FA.cell(1, -4) // within reach (5 blocks) of both
       await tp(t, a, standAt.x, WALK_Y, standAt.z)
@@ -859,8 +859,8 @@ module.exports = {
       let t0 = Date.now()
       await a._genericPlace(floor0, new Vec3(0, 1, 0), { swingArm: 'right' })
       await sleep(1500)
-      t.check('Mobiler Shop: refused when there is no room above the clicked block',
-        chatSince(a, t0, /nicht genug Platz/).length === 1 && countItem(a, 'armor_stand') === 2 && (await count(t, '@e[type=villager,name="Mobiler Shop"]')) === 0,
+      t.check('Mobile Shop: refused when there is no room above the clicked block',
+        chatSince(a, t0, /not enough space/).length === 1 && countItem(a, 'armor_stand') === 2 && (await count(t, '@e[type=villager,name="Mobile Shop"]')) === 0,
         { chat: chatSince(a, t0, /./), stands: countItem(a, 'armor_stand') })
       await t.server.cmd(`setblock ${blocked.bx} ${WALK_Y + 1} ${blocked.bz} minecraft:air`)
       await t.server.cmd(`clear ${a.username} minecraft:armor_stand 1`)
@@ -879,9 +879,9 @@ module.exports = {
       a.off('entitySpawn', onSpawn)
       const villager = spawned.find(e => e.name === 'villager')
       await sleep(500)
-      const named = await count(t, '@e[type=villager,name="Mobiler Shop"]')
+      const named = await count(t, '@e[type=villager,name="Mobile Shop"]')
       const standNear = await countNear(t, a, 'armor_stand', 3)
-      t.check('Mobiler Shop: places a named villager next to the clicked block, consumes the item, no armor stand',
+      t.check('Mobile Shop: places a named villager next to the clicked block, consumes the item, no armor stand',
         named === 1 && countItem(a, 'armor_stand') === 0 && Math.abs(villager.position.x - free.x) < 0.6 && Math.abs(villager.position.z - free.z) < 0.6 && standNear === 0,
         { named, villagerAt: [r1(villager.position.x), r1(villager.position.y), r1(villager.position.z)], expected: [free.x, WALK_Y, free.z], armorStandsNear: standNear })
       // opens the shop
@@ -892,17 +892,17 @@ module.exports = {
       const title = opened ? JSON.stringify(a.currentWindow.title) : null
       const cats = opened ? a.currentWindow.slots.filter(x => x && /Extras/.test(itemName(x))).length : 0
       if (opened) await a.closeWindow(a.currentWindow)
-      t.check('Mobiler Shop: right-click opens the BedWars shop', opened && cats === 1, { opened, title })
+      t.check('Mobile Shop: right-click opens the BedWars shop', opened && cats === 1, { opened, title })
       // vanishes after 20 s
-      const tGone = await poll(async () => (await count(t, '@e[type=villager,name="Mobiler Shop"]')) === 0 && Date.now(), { timeout: 30000, step: 200, what: 'shop villager to vanish' }).catch(() => null)
+      const tGone = await poll(async () => (await count(t, '@e[type=villager,name="Mobile Shop"]')) === 0 && Date.now(), { timeout: 30000, step: 200, what: 'shop villager to vanish' }).catch(() => null)
       const seconds = tGone ? (tGone - tPlaced) / 1000 : null
-      t.check('Mobiler Shop: disappears after 20 s', seconds !== null && seconds > 19.2 && seconds < 21.5, { seconds: seconds && r2(seconds) })
+      t.check('Mobile Shop: disappears after 20 s', seconds !== null && seconds > 19.2 && seconds < 21.5, { seconds: seconds && r2(seconds) })
     }
 
-    // ============================================================== Rettungsplattform
+    // ============================================================== Rescue Platform
     if (want('platform')) state.voidSpot = await findVoid()
     if (want('platform')) {
-      if (!state.voidSpot) throw new Error('no void spot found for the Rettungsplattform test')
+      if (!state.voidSpot) throw new Error('no void spot found for the Rescue Platform test')
       const vs = state.voidSpot
       await hold(a, 'nether_star')
       await tp(t, a, vs.x, WALK_Y + 31, vs.z) // far away from every island: void below
@@ -926,7 +926,7 @@ module.exports = {
       const stands = a.entity.onGround
       const yStand = a.entity.position.y
       const layers = [...new Set(blocks.map(x => x.dy))]
-      t.check('Rettungsplattform: builds a platform under the falling player that catches them',
+      t.check('Rescue Platform: builds a platform under the falling player that catches them',
         blocks.length >= 5 && stands && countItem(a, 'nether_star') === 1 && yStand > MAP.voidY + 5 && dist2(a.entity.position, vs) < 4, { blocks: blocks.length, names: [...new Set(blocks.map(x => x.n))], layersDyFromUse: layers, yUse: r1(yUse), yStand: r1(yStand), onGround: stands, stars: countItem(a, 'nether_star') })
       const extent = blocks.length ? [Math.min(...blocks.map(x => x.dx)), Math.max(...blocks.map(x => x.dx)), Math.min(...blocks.map(x => x.dz)), Math.max(...blocks.map(x => x.dz))] : null
       t.log('platform extent dx/dz', extent)
@@ -935,7 +935,7 @@ module.exports = {
       await rightClick(a)
       await sleep(700)
       t.log('second star within 2 s: chat', chatSince(a, t1, /./), 'stars', countItem(a, 'nether_star'))
-      t.check('Rettungsplattform: a second use within the cooldown is refused (message, star kept)', chatSince(a, t1, /warten/).length === 1 && countItem(a, 'nether_star') === 1,
+      t.check('Rescue Platform: a second use within the cooldown is refused (message, star kept)', chatSince(a, t1, /wait /).length === 1 && countItem(a, 'nether_star') === 1,
         { chat: chatSince(a, t1, /./), stars: countItem(a, 'nether_star') })
       // measure break time, then save the player before the platform disappears
       const placedAt = t0 + 150
@@ -944,7 +944,7 @@ module.exports = {
       await tp(t, a, FA.home.x, FA.home.y, FA.home.z)
       const gone = await waitFor(() => (a.blockAt(probeAt) || { name: 'air' }).name === 'air' && Date.now(), { timeout: 20000, step: 100, what: 'platform to break' }).catch(() => null)
       const seconds = gone ? (gone - placedAt) / 1000 : null
-      t.check('Rettungsplattform: breaks again after ~10 s', seconds !== null && seconds > 8.5 && seconds < 12, { seconds: seconds && r2(seconds) })
+      t.check('Rescue Platform: breaks again after ~10 s', seconds !== null && seconds > 8.5 && seconds < 12, { seconds: seconds && r2(seconds) })
     }
 
     // ============================================================== TNT
@@ -1067,15 +1067,15 @@ module.exports = {
       const hp1 = await health(t, a)
       clearInterval(pearlTracer); a.off('health', onHealth)
       t.log('pearl server hp trace', pearlTrace.join(','), 'client health events', clientHp.join(','))
-      t.check('Enderperle: teleports the thrower to the landing spot, pearl consumed',
+      t.check('Ender Pearl: teleports the thrower to the landing spot, pearl consumed',
         dist2(pos, target) < 6 && Math.abs(pos.y - WALK_Y) < 2 && countItem(a, 'ender_pearl') === 0,
         { pos: [r1(pos.x), r1(pos.y), r1(pos.z)], target: [r1(target.x), r1(target.z)], pitchDeg: r1(bestPitch * 180 / Math.PI), flightSeconds: r2((tTp - t0) / 1000), pearls: countItem(a, 'ender_pearl') })
-      t.check('Enderperle: landing costs 5 health like in 1.8', hp0 - hp1 === 5, { hp0, hp1 })
+      t.check('Ender Pearl: landing costs 5 health like in 1.8', hp0 - hp1 === 5, { hp0, hp1 })
       if (targetWasAir) await t.server.cmd(`fill ${fillA} ${fillB} minecraft:air replace minecraft:stone`)
       await tp(t, a, FA.home.x, FA.home.y, FA.home.z)
     }
 
-    // ============================================================== Teamkiste
+    // ============================================================== Team Chest
     if (want('chest')) {
       const mate = [b, c, d].find(x => teams[x.username] === teamA)
       const foe = [b, c, d].find(x => teams[x.username] !== teamA)
@@ -1086,7 +1086,7 @@ module.exports = {
       await a._genericPlace(ground, new Vec3(0, 1, 0), { swingArm: 'right' })
       await sleep(800)
       const chest = a.blockAt(new Vec3(chestCell.bx, WALK_Y, chestCell.bz))
-      t.check('Teamkiste: ender chest can be placed', chest && chest.name === 'ender_chest', { block: chest && chest.name })
+      t.check('Team Chest: ender chest can be placed', chest && chest.name === 'ender_chest', { block: chest && chest.name })
       await t.server.cmd(`give ${a.username} minecraft:diamond 5`)
       await waitFor(() => countItem(a, 'diamond') === 5, { timeout: 4000, what: 'diamonds' })
       const openChest = async bot => {
@@ -1110,18 +1110,18 @@ module.exports = {
         deposited = w.slots.slice(0, w.inventoryStart).filter(x => x && x.name === 'diamond').reduce((n, x) => n + x.count, 0)
         await a.closeWindow(w)
       }
-      t.check('Teamkiste: placer can open it and put items in', !!w && deposited === 5, { title: titleA, depositedDiamonds: deposited })
+      t.check('Team Chest: placer can open it and put items in', !!w && deposited === 5, { title: titleA, depositedDiamonds: deposited })
       await sleep(400)
       const wm = await openChest(mate)
       const mateSees = wm ? wm.slots.slice(0, wm.inventoryStart).filter(x => x && x.name === 'diamond').reduce((n, x) => n + x.count, 0) : null
       if (wm) await mate.closeWindow(wm)
-      t.check('Teamkiste: a teammate sees the same items', mateSees === 5, { mate: mate.username, sees: mateSees })
+      t.check('Team Chest: a teammate sees the same items', mateSees === 5, { mate: mate.username, sees: mateSees })
       await tp(t, mate, MAP.teams[teamA].spawn.x, MAP.teams[teamA].spawn.y, MAP.teams[teamA].spawn.z)
       await sleep(300)
       const wf = await openChest(foe)
       const foeSees = wf ? wf.slots.slice(0, wf.inventoryStart).filter(x => x && x.name === 'diamond').reduce((n, x) => n + x.count, 0) : 0
       if (wf) await foe.closeWindow(wf)
-      t.check('Teamkiste: an enemy does not see the team items', foeSees === 0, { foe: foe.username, windowOpened: !!wf, sees: foeSees })
+      t.check('Team Chest: an enemy does not see the team items', foeSees === 0, { foe: foe.username, windowOpened: !!wf, sees: foeSees })
       const fh = MAP.teams[teams[foe.username]].spawn
       await tp(t, foe, fh.x, fh.y, fh.z)
     }
@@ -1133,11 +1133,11 @@ module.exports = {
       await t.server.cmd(`give ${e.username} minecraft:chicken_spawn_egg 1`)
       await t.server.cmd(`give ${e.username} minecraft:armor_stand 1`)
       const slotRef = (bot, name) => { const it = bot.inventory.items().find(i => i.name === name); return it ? `container.${it.slot >= 36 ? it.slot - 36 : it.slot}` : null }
-      await t.server.cmd(`give ${e.username} minecraft:nether_star 1`) // (the Rettungsplattform is recognised by the item id)
+      await t.server.cmd(`give ${e.username} minecraft:nether_star 1`) // (the Rescue Platform is recognised by the item id)
       await sleep(500)
       const names = ['firework_rocket', 'chicken_spawn_egg', 'armor_stand', 'nether_star']
       const gameType = async () => { const r = await t.server.cmd(`data get entity ${e.username} playerGameType`); const m = /(\d+)\s*$/.exec(r.trim()); return m ? Number(m[1]) : null }
-      const snapshot = (c, radius, below) => { // block names around a fixed point (a Rettungsplattform would change them)
+      const snapshot = (c, radius, below) => { // block names around a fixed point (a Rescue Platform would change them)
         const out = new Map()
         for (let dx = -radius; dx <= radius; dx++) for (let dz = -radius; dz <= radius; dz++) for (let dy = -below; dy <= 2; dy++) {
           const pos = new Vec3(Math.floor(c.x) + dx, Math.floor(c.y) + dy, Math.floor(c.z) + dz); const blk = e.blockAt(pos)
@@ -1145,7 +1145,7 @@ module.exports = {
         }
         return out
       }
-      // airborne: the spectator is dropped from high up, so that the Fallschirm and the Rettungsplattform would really work if they were allowed to
+      // airborne: the spectator is dropped from high up, so that the Parachute and the Rescue Platform would really work if they were allowed to
       const runItems = async (label, expectType, airborne) => {
         const typeNow = await gameType()
         const start = e.entity.position.clone()
@@ -1174,9 +1174,9 @@ module.exports = {
         const moved = e.entity.position.distanceTo(start)
         const maxUp = Math.max(...r.samples.map(x => x.y - start.y))
         const maxDy = airborne ? maxUp : Math.max(...r.samples.map(x => Math.abs(x.y - start.y)))
-        const shops = await count(t, '@e[type=villager,name="Mobiler Shop"]')
-        t.check(`spectator${label}: Teleporter/Fallschirm/Mobiler Shop/Rettungsplattform do nothing`,
-          typeNow === expectType && chatSince(e, t0, /Teleport|Fallschirm|Luft|Plattform|Sekunden/).length === 0 && chickensSeen === 0 && shops === 0 && maxDy < 2 &&
+        const shops = await count(t, '@e[type=villager,name="Mobile Shop"]')
+        t.check(`spectator${label}: Teleporter/Parachute/Mobile Shop/Rescue Platform do nothing`,
+          typeNow === expectType && chatSince(e, t0, /Teleport|Parachute|air|Platform|seconds/).length === 0 && chickensSeen === 0 && shops === 0 && maxDy < 2 &&
           changed === 0 && !r.forced.some(f => f.t > t0 + 500) && names.every(n => countItem(e, n) >= 1),
           { gameType: typeNow, expectedGameType: expectType, airborne, moved: r1(moved), maxDy: r1(maxDy), chickensSeen, shops, blocksChangedAround: changed, items: invSummary(e), chat: chatSince(e, t0, /./) })
       }

@@ -1,5 +1,5 @@
-// Lobby under load and the German info commands (the client-independent parts of the old 1.8 compat spec):
-//   /bw list, /bw stats, /bw help answer in German; 8 players connect at once and are all auto-joined; three rounds
+// Lobby under load and the English info commands (the client-independent parts of the old 1.8 compat spec):
+//   /bw list, /bw stats, /bw help answer in English; 8 players connect at once and are all auto-joined; three rounds
 //   of rapid leave/rejoin leave no ghost sessions, keep the TPS healthy and every sidebar at 8/8; a 9th player on a
 //   full arena is not left in the void and stays connected.
 const { connectBot, waitFor, sleep, MAP } = require('../harness/bots')
@@ -24,20 +24,20 @@ module.exports = {
     const join = async name => { const b = await connectBot(server, name); b.on('end', () => { b.disconnected = true }); return b }
     const quit = async b => { await new Promise(resolve => { b.once('end', resolve); try { b.quit() } catch (e) { resolve() } setTimeout(resolve, 3000) }) }
 
-    // ---- commands in German
+    // ---- commands in English
     const anchor = await join('LdAnchor')
     await waitFor(() => nearLobby(anchor.entity.position), { timeout: 10000, what: 'anchor in the lobby' })
     anchor.chatLog.length = 0
     for (const cmd of ['/bw list', '/bw stats', '/bw help']) { anchor.chat(cmd); await sleep(700) }
     const out = anchor.chatLog.map(c => c.m)
     t.log('command output', out.slice(0, 20))
-    t.check('/bw list, /bw stats, /bw help answer in German (Verfügbare Arenen, Statistiken, Hilfe)',
-      out.some(m => /Verfügbare Arenen/.test(m)) && out.some(m => /Statistiken von Spieler LdAnchor/.test(m)) && out.some(m => /Hilfe/.test(m)) &&
-      !out.some(m => /(Available arenas|Statistics of|Help:)/.test(m)), out.slice(0, 12))
+    t.check('/bw list, /bw stats, /bw help answer in English (Available arenas, Stats of player, Help)',
+      out.some(m => /Available arenas/.test(m)) && out.some(m => /Stats of player LdAnchor/.test(m)) && out.some(m => /Help:/.test(m)) &&
+      !out.some(m => /(Verfügbare Arenen|Statistiken|Hilfe)/.test(m)), out.slice(0, 12))
     t.check('/bw list names the arena with its player count', out.some(m => new RegExp(`${MAP.name} 1\\b`).test(m)), out.filter(m => new RegExp(MAP.name).test(m)))
-    t.check('/bw stats shows kills, deaths and K/D', ['Kills:', 'Tode:', 'K/D:'].every(k => out.some(m => m.includes(k))), out)
+    t.check('/bw stats shows kills, deaths and K/D', ['Kills:', 'Deaths:', 'K/D:'].every(k => out.some(m => m.includes(k))), out)
     const sb = sidebarLines(anchor)
-    t.check('lobby sidebar is German (Map / Spieler / Warten), not English', sb.some(l => /Map: /.test(l)) && sb.some(l => /Spieler: /.test(l)) && sb.some(l => /Warten/.test(l)) && !sb.some(l => /Players|Waiting/.test(l)), sb)
+    t.check('lobby sidebar is English (Map / Players / Waiting), not German', sb.some(l => /Map: /.test(l)) && sb.some(l => /Players: /.test(l)) && sb.some(l => /Waiting/.test(l)) && !sb.some(l => /Spieler|Warten/.test(l)), sb)
     await quit(anchor)
     await sleep(800)
 
@@ -70,7 +70,7 @@ module.exports = {
     t.check(`the arena counts exactly ${MAX_PLAYERS} players`, new RegExp(`${MAP.name} ${MAX_PLAYERS}\\b`).test(bwList), bwList)
     const tps = Number((/TPS: ([\d.]+)/.exec(await server.cmd('tps')) || [])[1])
     t.check('server TPS stays healthy (>= 15)', tps >= 15, { tps })
-    const full = new RegExp(`Spieler: ${MAX_PLAYERS}/${MAX_PLAYERS}`)
+    const full = new RegExp(`Players: ${MAX_PLAYERS}/${MAX_PLAYERS}`)
     await waitFor(() => churn.every(b => sidebarLines(b).some(l => full.test(l))), { timeout: 8000 }).catch(() => null)
     t.check(`every rejoined client has the lobby sidebar showing ${MAX_PLAYERS}/${MAX_PLAYERS}`, churn.every(b => sidebarLines(b).some(l => full.test(l))),
       churn.filter(b => !sidebarLines(b).some(l => full.test(l))).map(b => [b.username, sidebarLines(b)]))

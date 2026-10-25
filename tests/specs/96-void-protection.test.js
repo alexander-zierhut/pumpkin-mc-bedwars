@@ -18,7 +18,7 @@ module.exports = {
     const sp = MAP.teams[tb].spawn
     await t.server.cmd(`tp VdB ${sp.x} ${MAP.voidY - 10} ${sp.z}`)
     await sleep(1500)
-    const msgs = b.chatLog.filter(c => c.t >= t0 && /gestorben|getötet|Respawn/.test(c.m)).map(c => c.m)
-    t.check('void death during respawn protection', msgs.some(m => /gestorben|getötet/.test(m)), { msgs, y: b.entity.position.y, voidY: MAP.voidY })
+    const msgs = b.chatLog.filter(c => c.t >= t0 && /died|was killed|Respawn/.test(c.m)).map(c => c.m)
+    t.check('void death during respawn protection', msgs.some(m => /died|was killed/.test(m)), { msgs, y: b.entity.position.y, voidY: MAP.voidY })
   }
 }

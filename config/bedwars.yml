@@ -15,14 +15,14 @@ min-players: 2
 
 resources:
   bronze: { item: brick, name: Bronze, color: "§4", interval: 1 }
-  iron: { item: iron_ingot, name: Silber, color: "§7", interval: 10 }
+  iron: { item: iron_ingot, name: Iron, color: "§7", interval: 10 }
   gold: { item: gold_ingot, name: Gold, color: "§6", interval: 30 }
 
 # Lore added below every shop item (%price%, %resource%, %amount%)
 shop-lore:
-  - "§7Preis:"
+  - "§7Price:"
   - "§f§l%price% %resource%"
-  - "§7Menge:"
+  - "§7Amount:"
   - "§f%amount%"
 
 respawn-protection-seconds: 3

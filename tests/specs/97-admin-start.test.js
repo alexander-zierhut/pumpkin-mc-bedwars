@@ -1,5 +1,5 @@
 // LAN feedback round 2: no automatic start (an admin starts with the diamond item), no advancement
-// messages in chat, readable German price lore in the shop.
+// messages in chat, readable English price lore in the shop.
 const fs = require('fs')
 const path = require('path')
 const { MAP, waitFor, sleep } = require('../harness/bots')
@@ -33,13 +33,13 @@ module.exports = {
     const startItemSlot = diamond ? diamond.slot : null; void startItemSlot
 
     // the admin assigns the teams, then starts with /start (wait until the admin is back in the lobby after /bw leave)
-    await waitFor(() => admin.chatLog.some(c => /AdmA tritt dem Spiel bei! \[2\//.test(c.m)), { timeout: 15000, what: 'admin back in the lobby' }).catch(() => {})
+    await waitFor(() => admin.chatLog.some(c => /AdmA joined the game! \[2\//.test(c.m)), { timeout: 15000, what: 'admin back in the lobby' }).catch(() => {})
     await sleep(1000)
     const [teamA, teamB] = MAP.teamNames
     admin.chat(`/setteam AdmA ${teamA}`); await sleep(700)
     admin.chat(`/setteam AdmB ${teamB}`); await sleep(700)
     const assigned = admin.chatLog.slice(-8).map(c => c.m)
-    t.check('/setteam puts players into the chosen teams', assigned.some(m => m.includes(`AdmB ist jetzt in Team ${teamB}`)) && assigned.some(m => m.includes(`AdmA ist jetzt in Team ${teamA}`)), assigned)
+    t.check('/setteam puts players into the chosen teams', assigned.some(m => m.includes(`AdmB is now in team ${teamB}`)) && assigned.some(m => m.includes(`AdmA is now in team ${teamA}`)), assigned)
     admin.chat('/start')
     const started = await waitFor(() => onTeamSpawn(admin) && onTeamSpawn(other), { timeout: 15000, what: 'game start' }).then(() => true, () => false)
     t.check('/start begins the round', started, { admin: admin.entity.position })

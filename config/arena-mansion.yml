@@ -17,13 +17,13 @@ teams:
     bed: -79;82;-84;0.0;0.0
     spawn: -72.5;75;-78.5;0.0;0.0
     actualName: Orange
-  Hellblau:
+  Aqua:
     isNewColor: true
     color: LIGHT_BLUE
     maxPlayers: 4
     bed: -67;82;70;0.0;0.0
     spawn: -72.5;75;65.5;180.0;0.0
-    actualName: Hellblau
+    actualName: Aqua
 spawners:
 - location: -64.5;75.0;-80.5;0.0;0.0
   type: bronze
@@ -37,7 +37,7 @@ spawners:
   customName: null
   startLevel: 1.0
   hologramEnabled: true
-  team: Hellblau
+  team: Aqua
   maxSpawnedResources: -1
 - location: -34.5;73.0;-81.5;0.0;0.0
   type: iron

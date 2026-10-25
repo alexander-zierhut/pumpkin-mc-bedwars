@@ -1,5 +1,5 @@
 // LAN-party feedback (24.10.): slower bronze/silver, one bronze spawner per base, gold 4 per drop,
-// 1.8 regeneration speed, Schnellkauf items on the shop's main page, sorting the own inventory while the shop is open.
+// 1.8 regeneration speed, Quick Buy items on the shop's main page, sorting the own inventory while the shop is open.
 const { MAP, waitForGameStart, waitFor, sleep, countItem, Vec3 } = require('../harness/bots')
 
 const GOLD = MAP.spawners.filter(s => s.type === 'gold')
@@ -58,7 +58,7 @@ module.exports = {
     const regenRate = (a.health - h0) / 20
     t.check('natural regeneration about 1 HP per 4 s (0.15..0.35 HP/s)', regenRate >= 0.15 && regenRate <= 0.35, { hpPerSecond: regenRate, from: h0, to: a.health })
 
-    // --- shop: Schnellkauf items on the main page
+    // --- shop: Quick Buy items on the main page
     const sp = MAP.nearestStore(MAP.teams[ta].spawn)
     await tp(a, { x: sp.x - (sp.x > 0 ? 1.5 : -1.5), y: sp.y, z: sp.z }); await sleep(1500)
     const win = await openShop(a)
@@ -67,7 +67,7 @@ module.exports = {
     const top = win.slots.slice(0, win.inventoryStart)
     const names = top.map((it, i) => it ? `${i}:${it.name}` : null).filter(Boolean)
     const sand = top.findIndex(it => it && it.name === 'red_sandstone' && it.count === 2)
-    t.check('main page shows the Schnellkauf items (Sandstein x2 buyable without opening a category)', sand >= 9, { names })
+    t.check('main page shows the Quick Buy items (Sandstone x2 buyable without opening a category)', sand >= 9, { names })
     t.check('main page still shows the category icons in the first row', top.slice(0, 9).filter(Boolean).length >= 8, { firstRow: names.filter(n => Number(n.split(':')[0]) < 9) })
     const bronzeBefore = countItem(a, 'brick'); const sandBefore = countItem(a, 'red_sandstone')
     await a.clickWindow(sand, 0, 0); await sleep(900)
@@ -86,7 +86,7 @@ module.exports = {
         after && after.name === 'red_sandstone' && !(a.currentWindow && a.currentWindow.slots[invSlot] && a.currentWindow.slots[invSlot].name === 'red_sandstone'),
         { before8, after8: after && after.name, from: invSlot })
     } else {
-      t.check('number key sorting: Sandstein is in the inventory to test with', false, { slots: w.slots.slice(w.inventoryStart).map(s => s && s.name) })
+      t.check('number key sorting: Sandstone is in the inventory to test with', false, { slots: w.slots.slice(w.inventoryStart).map(s => s && s.name) })
     }
     void b; void Vec3
   }

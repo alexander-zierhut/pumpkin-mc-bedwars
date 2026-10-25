@@ -1,35 +1,30 @@
-# BedWars on Pumpkin
+<div align="center">
 
-**1.8 PvP BedWars on a Minecraft server written in Rust.** Modern clients, one `docker run`, about 240 MB of RAM.
+<h1>BedWars on Pumpkin</h1>
 
-[![Build server](https://github.com/alexander-zierhut/pumpkin-mc-bedwars/actions/workflows/build.yml/badge.svg)](https://github.com/alexander-zierhut/pumpkin-mc-bedwars/actions/workflows/build.yml)
-![Minecraft 26.3](https://img.shields.io/badge/Minecraft-26.3-3c8527)
-![Combat 1.8](https://img.shields.io/badge/combat-1.8-b02e26)
-![Plugin TypeScript to Wasm](https://img.shields.io/badge/plugin-TypeScript%20%E2%86%92%20Wasm-3178c6)
+<p>BedWars with Minecraft 1.8 PvP on <a href="https://pumpkinmc.org">Pumpkin</a>, a Minecraft server written in Rust</p>
 
-[Pumpkin](https://pumpkinmc.org) is a Minecraft server written from scratch in Rust. It is fast and small, but until
-now it could not run a PvP minigame: arrows, snowballs and tridents flew straight through players, there was no 1.8
-combat, and the plugin API was missing what a minigame needs. This repository is a complete, play tested BedWars
-server on Pumpkin, and the [fork behind it](https://github.com/alexander-zierhut/pumpkin-mc-pvp) fixes the server
-itself, with every fix as its own ready pull request.
+[![Build](https://img.shields.io/github/actions/workflow/status/alexander-zierhut/pumpkin-mc-bedwars/build.yml?branch=main&style=for-the-badge&label=build)](https://github.com/alexander-zierhut/pumpkin-mc-bedwars/actions/workflows/build.yml)
+[![Minecraft Java 26.3](https://img.shields.io/badge/Minecraft_Java-26.3-62b47a?style=for-the-badge)](https://www.minecraft.net)
+[![Pumpkin](https://img.shields.io/badge/server-Pumpkin-f28c28?style=for-the-badge)](https://pumpkinmc.org)
+[![Rust](https://img.shields.io/badge/Rust-server-b7410e?style=for-the-badge&logo=rust)](https://github.com/alexander-zierhut/pumpkin-mc-pvp)
+[![TypeScript](https://img.shields.io/badge/TypeScript-plugin-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](plugin/src)
+[![WebAssembly](https://img.shields.io/badge/WebAssembly-component-654ff0?style=for-the-badge&logo=webassembly&logoColor=white)](plugin/build.mjs)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ed?style=for-the-badge&logo=docker&logoColor=white)](#start-a-server)
 
-## Why it is interesting
+<img src="docs/images/rush.png" alt="The Rush map: two team islands with their beds and a middle island, rendered from the world files" width="100%">
 
-- **Real 1.8 PvP for 26.3 clients.** No attack cooldown, sword blocking, 1.8 damage, crits and knockback, done by the
-  server. Nobody needs an old client, ViaVersion or a mod.
-- **The 1.8 bow, measured.** 128 identical shots on a real 1.8.9 server and on this one: same launch speed (2.9965
-  vs 2.9972 blocks per tick), the same spread, and every arrow follows the 1.8 flight path to within 0.05 blocks.
-  Before the fork, a level shot on Pumpkin landed 13 % short. [The report](reports/bow-1.8.9-vs-pumpkin.md).
-- **Tiny footprint.** A lobby with 8 players takes about 2 % of one CPU core and about 240 MB of RAM, a running 1v1
-  round about 4 %. The fork cut Pumpkin's idle CPU on a many-core host from about 7 % to about 1 %.
-- **The whole game is TypeScript compiled to WebAssembly.** About 3,700 lines for lobby, teams, shop,
-  resource spawners, special items, rejoin and statistics, running in Pumpkin's Wasm plugin host.
-- **42 fixes for Pumpkin, each as a pull request.** Projectiles that hit players, the vanilla arrow flight order, item
-  hashes that stop inventory flicker, teleport races, late joiners who saw nobody, a server freeze in the plugin host,
-  and more. Every bug is written up with cause, repro and the vanilla code it follows in
-  [PUMPKIN-FINDINGS.md](PUMPKIN-FINDINGS.md).
-- **Tested by bots.** 18 end-to-end specs with about 500 checks: mineflayer bots join, buy, bridge, fight, shoot and
-  break beds on throwaway servers.
+<p>
+<a href="#start-a-server">Start a server</a> ·
+<a href="#the-story">The story</a> ·
+<a href="#features">Features</a> ·
+<a href="#playing">Playing</a> ·
+<a href="#changes-to-pumpkin">Changes to Pumpkin</a> ·
+<a href="#development">Development</a> ·
+<a href="#contact">Contact</a>
+</p>
+
+</div>
 
 ## Start a server
 
@@ -39,11 +34,18 @@ You need [Docker](https://docs.docker.com/get-docker/). One command downloads an
 docker run -dit --name bedwars --restart unless-stopped -p 25565:25565 -v bedwars:/srv ghcr.io/alexander-zierhut/pumpkin-mc-bedwars:latest
 ```
 
-Join with Minecraft Java 26.3 on the address of that machine. To become admin, open the console and op yourself:
+Then join on the address of that machine and make yourself admin in the console:
 
 ```bash
 docker attach bedwars        # type: op <your Minecraft name>, leave with Ctrl+P Ctrl+Q
 ```
+
+> [!NOTE]
+> Players join with a normal Minecraft Java 26.3 client. The 1.8 combat is done by the server, so nobody needs an old
+> client, ViaVersion or a mod.
+
+<details>
+<summary>Updating, and running without Docker</summary>
 
 Update with `docker pull ghcr.io/alexander-zierhut/pumpkin-mc-bedwars:latest`, then remove and start the container
 again with the same command. Worlds, settings and statistics stay in the volume `bedwars`.
@@ -52,16 +54,71 @@ Without Docker (Linux x86_64): download `bedwars-server-linux-x86_64.tar.gz` fro
 [latest release](https://github.com/alexander-zierhut/pumpkin-mc-bedwars/releases/tag/latest), unpack it and run
 `./start.sh`.
 
+</details>
+
+## The story
+
+This started as a LAN party server on Paper. Out of curiosity it was ported to Pumpkin, and Pumpkin's performance was
+the reason to keep going. It was also already close to running a PvP minigame like this. What was left were mostly
+details in combat, projectiles and inventories, and a few additions to the plugin API.
+
+Those pieces are in a [fork of Pumpkin](https://github.com/alexander-zierhut/pumpkin-mc-pvp), and each of them is
+also a separate pull request in that fork, so the Pumpkin maintainers can look at them one by one and take what fits.
+The game itself is a TypeScript plugin that runs in Pumpkin's WebAssembly plugin host.
+
+## Features
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<h4>1.8 combat for modern clients</h4>
+No attack cooldown, sword blocking, 1.8 damage, criticals and knockback, all done by the server. Optional with
+<code>[pvp.legacy_combat]</code>.
+</td>
+<td width="50%" valign="top">
+<h4>The 1.8 bow</h4>
+Compared with a real 1.8.9 server over 128 identical shots: the same launch speed and spread, and the flight follows
+the 1.8 path to within 0.05 blocks (<a href="reports/bow-1.8.9-vs-pumpkin.md">report</a>).
+</td>
+</tr>
+<tr>
+<td valign="top">
+<h4>Small footprint</h4>
+A lobby with 8 players uses about 2 % of one CPU core and about 240 MB of RAM, a running 1v1 round about 4 %. The
+server starts in a few seconds.
+</td>
+<td valign="top">
+<h4>TypeScript plugin</h4>
+Lobby, teams, shop, resource spawners, special items, rejoin and statistics in about 3,700 lines of TypeScript,
+compiled to a WebAssembly component.
+</td>
+</tr>
+<tr>
+<td valign="top">
+<h4>Tested by bots</h4>
+18 end-to-end specs with about 500 checks: mineflayer bots join, buy, bridge, fight, shoot and break beds on throwaway
+servers.
+</td>
+<td valign="top">
+<h4>One command</h4>
+<code>docker run</code> to play, <code>./bedwars.sh</code> to build everything from source. Only Docker and git are
+needed.
+</td>
+</tr>
+</table>
+
 ## Playing
 
-Rewinside style BedWars, two teams (Rot and Blau), texts in German. Everyone who joins lands in the lobby of the active
-map and picks a team with the item in the hotbar. An admin starts the round with the diamond in the lobby or with
-`/start`. Break the enemy bed, then the last team standing wins.
+Two teams, Red and Blue. Everyone who joins lands in the lobby of the active map and picks a team with the item in
+the hotbar. An admin starts the round with the diamond in the lobby or with `/start`. Break the enemy bed, then the
+last team standing wins.
 
-- Spawners drop Bronze, Silber and Gold. The villagers are the shop: blocks, weapons, armour, bows, potions, specials.
-- Specials: Teleporter, Fallschirm (a parachute you can shoot from), Mobiler Shop, Rettungsplattform, TNT,
-  Enderperle, Teamkiste.
+- Spawners drop Bronze, Iron and Gold. The villagers are the shop: blocks, weapons, armor, bows, potions, specials.
+- Specials: Teleporter, Parachute, Mobile Shop, Rescue Platform, TNT, Ender Pearl, Team Chest.
 - Rush is the map that comes with the server. More maps can be added, see below.
+
+<details>
+<summary>Commands</summary>
 
 | Command | Who | What |
 |---|---|---|
@@ -72,7 +129,10 @@ map and picks a team with the item in the hotbar. An admin starts the round with
 | `/bw join`, `/bw leave`, `/bw list`, `/bw stats [player]`, `/bw help` | everyone | |
 | `/autojoin` | everyone | stop or start joining rounds automatically (to build or watch) |
 
-## Settings
+</details>
+
+<details>
+<summary>Settings</summary>
 
 The server folder is the volume (`/srv` in the container, `docker volume inspect bedwars` shows where it is):
 
@@ -85,7 +145,10 @@ The server folder is the volume (`/srv` in the container, `docker volume inspect
 without internet set it to `false` (in the `[networking.java]` section). The RCON password is generated on the first
 start and written into `pumpkin.toml`; RCON is only reachable from the machine itself unless you publish port 25575.
 
-## More maps
+</details>
+
+<details>
+<summary>Adding maps</summary>
 
 Only Rush is included. To add a map:
 
@@ -95,27 +158,28 @@ Only Rush is included. To add a map:
    `plugins/data/lan-bedwars/arenas/`.
 3. Restart the server and switch with `/map <name>`.
 
-## What it took
+</details>
 
-Porting a BedWars server touches almost every part of a Minecraft server. These are the areas the fork had to fix
-or add, all as [pull requests in the fork](https://github.com/alexander-zierhut/pumpkin-mc-pvp/pulls) against
-Pumpkin's `master`:
+## Changes to Pumpkin
+
+A BedWars round touches many parts of a server, so the port turned up a number of small things. The fork's
+[pull requests](https://github.com/alexander-zierhut/pumpkin-mc-pvp/pulls) are against Pumpkin's `master`, each
+with a short description, the vanilla code it follows and how it was tested. Notes on every finding are in
+[PUMPKIN-FINDINGS.md](PUMPKIN-FINDINGS.md).
 
 | Area | Examples |
 |---|---|
-| Combat | optional 1.8 combat (`[pvp.legacy_combat]`), knockback that no longer stacks over hits, motion syncs like vanilla |
-| Projectiles | arrows, snowballs, tridents and hooks hit players, vanilla flight order, shooter movement, owner and vehicle rules |
-| Inventory | component hashes like vanilla (no more flicker), stacks that compare equal, styled item names, screens that keep the cursor |
-| Network | moves that raced a teleport, teleport id races, chunk view after a teleport, late joiners, a zero `LpVec3` that kicked clients |
-| Plugin API | item drops, filtered explosions, shared GUIs, forced chunks, explode events with source, a store deadlock |
-| Performance | small worlds tick without waking Rayon, Fx hashing for chunk maps, non-blocking plugin events, memory after startup |
-
-The Pumpkin maintainers know about the fork and can pick what they want upstream.
+| Combat | optional 1.8 combat, knockback from the server's own motion, motion syncs like vanilla |
+| Projectiles | players as projectile targets, the vanilla arrow flight order, shooter movement, owner and vehicle rules |
+| Inventory | component hashes like vanilla, stack comparison, styled item names, screens that keep the cursor |
+| Network | moves during a teleport, teleport ids, the chunk view after a teleport, the join order |
+| Plugin API | item drops, filtered explosions, shared GUIs, forced chunks, explode events with their source |
+| Performance | fewer Rayon wake-ups for small worlds, Fx hashing for chunk maps, non-blocking plugin events |
 
 ## Development
 
-Clone with the fork as a submodule and start everything with one command. Only Docker and git are needed, the Rust
-and Node builds run in containers:
+Clone with the fork as a submodule and start everything with one command. The Rust and Node builds run in
+containers:
 
 ```bash
 git clone --recurse-submodules https://github.com/alexander-zierhut/pumpkin-mc-bedwars.git
@@ -124,7 +188,8 @@ cd pumpkin-mc-bedwars
 ```
 
 The first build compiles Pumpkin (about 10 to 20 minutes), later builds reuse the cache. The server runs on port
-25565 with its folder in `./data`.
+25565 with its folder in `./data`. [DEVELOPMENT.md](DEVELOPMENT.md) has the state of the project, the rules it
+follows and how the fork branches are maintained.
 
 | Command | What |
 |---|---|
@@ -134,8 +199,10 @@ The first build compiles Pumpkin (about 10 to 20 minutes), later builds reuse th
 | `./bedwars.sh reset-maps` | put the pristine maps back |
 | `./bedwars.sh test [spec]` | the bot test suite, needs Node 22 or newer (about 35 minutes, or one spec by name) |
 
-`BEDWARS_PORT=25566 ./bedwars.sh` runs a second server next to one on 25565. [DEVELOPMENT.md](DEVELOPMENT.md) has the
-state of the project, the rules it follows and how the fork branches are maintained.
+`BEDWARS_PORT=25566 ./bedwars.sh` runs a second server next to one on 25565.
+
+<details>
+<summary>Project layout</summary>
 
 | Part | Where |
 |---|---|
@@ -147,7 +214,10 @@ state of the project, the rules it follows and how the fork branches are maintai
 | Bot tests (mineflayer through ViaProxy) and the 1.8.9 comparison | `tests/` |
 | Fork branch and PR tooling | `tools/fork/` |
 
-### Tests
+</details>
+
+<details>
+<summary>Test specs</summary>
 
 | Spec | Checks |
 |---|---|
@@ -157,22 +227,24 @@ state of the project, the rules it follows and how the fork branches are maintai
 | 30 shop | every item of shop.yml, prices, shift-click, number keys, team colours |
 | 40 / 41 bow | 1.8 bow launch and flight; control run without legacy combat |
 | 50 melee | 1.8 damage table, crits, hit delay, knockback, blocking, armour, regeneration |
-| 60 special items | Teleporter, Fallschirm, Mobiler Shop, Rettungsplattform, TNT, Enderperle, Teamkiste |
+| 60 special items | Teleporter, Parachute, Mobile Shop, Rescue Platform, TNT, Ender Pearl, Team Chest |
 | 70 full game | a whole round with three players |
-| 80 lobby load | 8 players at once, leave and rejoin churn, German commands |
+| 80 lobby load | 8 players at once, leave and rejoin churn |
 | 90 rejoin | reconnect into the team, grace period |
 | 95 to 98 | play test fixes, void protection, admin start, network sync |
 
 Each spec starts its own throwaway server in Docker with ViaProxy in front (mineflayer speaks 26.1). The plugin's unit
 tests run with `cd plugin && npm test`.
 
+</details>
+
 ## How this was made
 
-Built in about a week with an AI coding agent (Claude Code), which wrote most of the code here and in the fork. It
-was held to evidence instead of trust: the decompiled vanilla 26.3 server as the reference for every fix, a real
-1.8.9 server for the combat, the bot test suite, and play tests with real clients.
+Most of the code here and in the fork was written with an AI coding agent (Claude Code) over about a week. Each change
+was checked against the decompiled vanilla 26.3 server, the combat against a real 1.8.9 server, and everything with
+the bot test suite and play tests with real clients.
 
-## Work together
+## Contact
 
-Want to run it, add maps, help get the fixes into Pumpkin or build something similar? Write me on Discord:
-**`alzlper`**.
+If you would like to run it, add maps, help with the upstream pull requests or work together on something similar,
+you can reach me on Discord: `alzlper`.

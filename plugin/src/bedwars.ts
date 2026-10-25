@@ -248,23 +248,23 @@ export class BedWars {
   cmdSetTeam (args: string[]): CommandResult {
     const g = this.activeGame
     if (args.length === 0) {
-      const lines = [`§7Teams auf §e${g.name}§7:`]
+      const lines = [`§7Teams on §e${g.name}§7:`]
       for (const t of g.teams.values()) {
         const members = [...t.members].map(m => this.platform.name(m)).join(', ') || '-'
         lines.push(`§7  ${g.teamLabel(t)}§7 (${t.members.size}/${t.def.maxPlayers}): §f${members}`)
       }
       const without = g.inLobby().filter(p => !g.players.get(p)!.team).map(p => this.platform.name(p))
-      lines.push(`§7  ohne Team: §f${without.join(', ') || '-'}`, '§7/setteam <Spieler> <Team>')
+      lines.push(`§7  no team: §f${without.join(', ') || '-'}`, '§7/setteam <player> <team>')
       return { lines }
     }
-    if (args.length !== 2) return { lines: ['§c/setteam <Spieler> <Team>'] }
+    if (args.length !== 2) return { lines: ['§c/setteam <player> <team>'] }
     if (g.phase !== 'waiting') return { lines: [MSG.notInLobby] }
     const target = g.connected().find(p => this.platform.name(p).toLowerCase() === args[0].toLowerCase())
-    if (!target) return { lines: [`§c${args[0]} ist nicht in der Lobby von ${g.name}.`] }
+    if (!target) return { lines: [`§c${args[0]} is not in the lobby of ${g.name}.`] }
     const team = [...g.teams.values()].find(t => t.def.name.toLowerCase() === args[1].toLowerCase())
-    if (!team) return { lines: [`§cUnbekanntes Team. Teams: ${[...g.teams.values()].map(t => t.def.name).join(', ')}`] }
+    if (!team) return { lines: [`§cUnknown team. Teams: ${[...g.teams.values()].map(t => t.def.name).join(', ')}`] }
     const ok = g.selectTeam(target, team.def.name)
-    return { lines: [ok ? `§a${this.platform.name(target)} ist jetzt in Team ${g.teamLabel(team)}§a.` : `§cTeam ${team.def.name} ist voll.`] }
+    return { lines: [ok ? `§a${this.platform.name(target)} is now in team ${g.teamLabel(team)}§a.` : `§cTeam ${team.def.name} is full.`] }
   }
 
   /** /map [name] (admin) */
@@ -306,14 +306,14 @@ export class BedWars {
       // /bw give <player> <item> [count] [enchant=level,...]: an item like the shop hands it out (1.8 sword blocking)
       const target = args[1]
       const id = (args[2] ?? '').replace(/^minecraft:/, '')
-      if (!target || !id || !this.platform.isOnline(target)) return { lines: ['§c/bw give <Spieler> <Item> [Anzahl] [verzauberung=stufe,...]'] }
+      if (!target || !id || !this.platform.isOnline(target)) return { lines: ['§c/bw give <player> <item> [amount] [enchantment=level,...]'] }
       const item: Item = { id, count: Math.max(1, Number(args[3] ?? 1) || 1) }
       if (args[4]) item.enchants = Object.fromEntries(args[4].split(',').map(e => e.split('=')).map(([k, v]) => [k, Number(v ?? 1)]))
       if (id.endsWith('_sword')) item.blocking = true
       const slot = Array.from({ length: 36 }, (_, i) => i).find(i => !this.platform.getSlot(target, i))
-      if (slot === undefined) return { lines: ['§cInventar voll.'] }
+      if (slot === undefined) return { lines: ['§cInventory full.'] }
       this.platform.setSlot(target, slot, item)
-      return { lines: [`§a${id} x${item.count} an ${target} gegeben.`] }
+      return { lines: [`§aGave ${id} x${item.count} to ${target}.`] }
     }
     if (sub === 'block' && isAdmin) {
       // debug: block of the active arena world as the server sees it
@@ -324,20 +324,20 @@ export class BedWars {
     }
     if (sub === 'stats') {
       const name = args[1] ?? (sender ? this.platform.name(sender) : null)
-      if (!name) return { lines: ['§c/bw stats <Spieler>'] }
+      if (!name) return { lines: ['§c/bw stats <player>'] }
       const [head, ...rest] = this.stats.lines(name)
       return { lines: [PREFIX + head, ...rest] }
     }
     if (sub === 'help') {
       return {
         lines: [
-          PREFIX + 'Hilfe:',
-          '§e/bw join §7- in die aktive Arena',
-          '§e/bw leave §7- die Arena verlassen',
-          '§e/bw list §7- alle Arenen',
-          '§e/bw stats [Spieler] §7- Statistiken',
-          '§e/autojoin §7- Auto-Join an/aus',
-          ...(isAdmin ? ['§e/start §7- Runde starten', '§e/map [Name] §7- aktive Map', '§e/setteam <Spieler> <Team>', '§e/bw cheat give <Ressource> [Anzahl] [Spieler]'] : [])
+          PREFIX + 'Help:',
+          '§e/bw join §7- join the active arena',
+          '§e/bw leave §7- leave the arena',
+          '§e/bw list §7- all arenas',
+          '§e/bw stats [player] §7- statistics',
+          '§e/autojoin §7- toggle auto-join',
+          ...(isAdmin ? ['§e/start §7- start the game', '§e/map [name] §7- active map', '§e/setteam <player> <team>', '§e/bw cheat give <resource> [amount] [player]'] : [])
         ]
       }
     }
@@ -347,19 +347,19 @@ export class BedWars {
     }
     if (sub === 'info') return { lines: [...this.games.values()].map(g => (g.name === this.active ? '* ' : '  ') + g.describe()) }
     if (sub === 'cheat' && (args[1] ?? '').toLowerCase() === 'give') {
-      if (!isAdmin) return { lines: ['§cDu hast keine Berechtigung das zu tun!'] }
+      if (!isAdmin) return { lines: ['§cYou do not have permission to do that!'] }
       const res = (args[2] ?? '').toLowerCase()
       const resource = (RESOURCES as string[]).includes(res) ? res as Resource
         : (Object.entries(this.settings.resources).find(([, r]) => r.name.toLowerCase() === res)?.[0] as Resource | undefined)
-      if (!resource) return { lines: [`§c/bw cheat give <${RESOURCES.join('|')}> [Anzahl] [Spieler]`] }
+      if (!resource) return { lines: [`§c/bw cheat give <${RESOURCES.join('|')}> [amount] [player]`] }
       const amount = Math.max(1, Math.min(2304, Number(args[3] ?? 64) || 64))
       const g = this.activeGame
       const target = args[4] ? g.connected().find(p => this.platform.name(p).toLowerCase() === args[4].toLowerCase()) : sender
-      if (!target || !g.isPlaying(target)) return { lines: ['§cDer Spieler muss in einer laufenden Runde sein.'] }
+      if (!target || !g.isPlaying(target)) return { lines: ['§cThe player must be in a running game.'] }
       g.giveResource(target, resource, amount)
-      return { lines: [`§a${amount} ${this.settings.resources[resource].name} an ${this.platform.name(target)} gegeben.`] }
+      return { lines: [`§aGave ${amount} ${this.settings.resources[resource].name} to ${this.platform.name(target)}.`] }
     }
-    return { lines: ['§7/bw leave | join | list | stats | help | info | cheat give <Ressource> [Anzahl] [Spieler]'] }
+    return { lines: ['§7/bw leave | join | list | stats | help | info | cheat give <resource> [amount] [player]'] }
   }
 
   /** /bwconfig <key> <value> (console/tests): countdown, min-players, arena */

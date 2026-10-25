@@ -1,11 +1,11 @@
 // Rewinside special items, ported from the Paper companion plugin (which ported github.com/Marfien/rewi-bw):
 //  Teleporter (firework rocket): stand still for the countdown, get shot up, get teleported home.
-//  Fallschirm (chicken spawn egg): a chicken on your head lets you glide in your view direction.
-//  Combo: opening the Fallschirm during the Teleporter launch cancels the home teleport.
-//  Mobiler Shop (armor stand): a shopkeeper for 20 s.
+//  Parachute (chicken spawn egg): a chicken on your head lets you glide in your view direction.
+//  Combo: opening the Parachute during the Teleporter launch cancels the home teleport.
+//  Mobile Shop (armor stand): a shopkeeper for 20 s.
 //  TNT: ignites itself when placed, the explosion only breaks placed blocks.
-//  Rettungsplattform (nether star): a platform under your feet for 10 s.
-//  Teamkiste (ender chest): a chest the whole team shares.
+//  Rescue Platform (nether star): a platform under your feet for 10 s.
+//  Team Chest (ender chest): a chest the whole team shares.
 import { key, type Game, type GameHooks, TICKS_PER_SECOND } from './game.ts'
 import type { BlockPos, Item, PlayerId, Vec3 } from './platform.ts'
 import { PREFIX, MSG } from './text.ts'
@@ -86,15 +86,15 @@ export class Specials implements GameHooks {
 
   startTeleporter (player: PlayerId) {
     if (this.countdowns.has(player) || this.launches.has(player)) {
-      this.p.message(player, PREFIX + 'Du teleportierst dich bereits.')
+      this.p.message(player, PREFIX + 'You are already teleporting.')
       return
     }
     if (this.underBlocks(player)) {
-      this.p.message(player, PREFIX + RED + 'Über dir dürfen keine Blöcke sein!')
+      this.p.message(player, PREFIX + RED + 'There must be no blocks above you!')
       return
     }
     const seconds = this.s.teleporter.countdownSeconds
-    this.p.message(player, PREFIX + `Teleport in §e${seconds}§7 Sekunden. Nicht bewegen!`)
+    this.p.message(player, PREFIX + `Teleporting in §e${seconds}§7 ${seconds === 1 ? 'second' : 'seconds'}. Do not move!`)
     this.countdowns.set(player, { remaining: seconds, nextTick: this.game.tick, block: key(this.p.location(player)) })
   }
 
@@ -105,15 +105,15 @@ export class Specials implements GameHooks {
 
   onMove (player: PlayerId, to: Vec3) {
     const c = this.countdowns.get(player)
-    if (c && key(to) !== c.block) this.cancelCountdown(player, RED + 'Teleport abgebrochen, du hast dich bewegt.')
+    if (c && key(to) !== c.block) this.cancelCountdown(player, RED + 'Teleport cancelled, you moved.')
   }
 
   private tickTeleporter (game: Game) {
     for (const [player, c] of [...this.countdowns]) {
       if (game.tick < c.nextTick) continue
       if (!game.isPlaying(player)) { this.countdowns.delete(player); continue }
-      if (this.underBlocks(player)) { this.cancelCountdown(player, RED + 'Über dir dürfen keine Blöcke sein!'); continue }
-      if (!this.hasItem(player, 'firework_rocket')) { this.cancelCountdown(player, RED + 'Du hast keinen Teleporter mehr.'); continue }
+      if (this.underBlocks(player)) { this.cancelCountdown(player, RED + 'There must be no blocks above you!'); continue }
+      if (!this.hasItem(player, 'firework_rocket')) { this.cancelCountdown(player, RED + 'You no longer have a Teleporter.'); continue }
       const at = this.p.location(player)
       if (c.remaining <= 0) {
         this.countdowns.delete(player)
@@ -151,11 +151,11 @@ export class Specials implements GameHooks {
 
   openParachute (player: PlayerId) {
     if (this.p.onGround(player)) {
-      this.p.message(player, PREFIX + RED + 'Du musst in der Luft sein, um den Fallschirm zu benutzen.')
+      this.p.message(player, PREFIX + RED + 'You must be in the air to use the Parachute.')
       return
     }
     if (this.glides.has(player)) {
-      this.p.message(player, PREFIX + 'Dein Fallschirm ist bereits offen.')
+      this.p.message(player, PREFIX + 'Your Parachute is already open.')
       return
     }
     if (!this.takeOne(player, 'chicken_spawn_egg')) return
@@ -183,7 +183,7 @@ export class Specials implements GameHooks {
   /** A hit on a parachute chicken (arrow, sword ...): the parachute is shot down, the chicken vanishes without drops. */
   shootDown (entity: number) {
     for (const [player, g] of [...this.glides]) {
-      if (g.chicken === entity) this.closeParachute(player, RED + 'Dein Fallschirm wurde abgeschossen!')
+      if (g.chicken === entity) this.closeParachute(player, RED + 'Your Parachute was shot down!')
     }
   }
 
@@ -193,7 +193,7 @@ export class Specials implements GameHooks {
       if (g.chicken !== entity) continue
       this.glides.delete(player)
       this.game.entities.delete(entity)
-      this.p.message(player, PREFIX + RED + 'Dein Fallschirm wurde abgeschossen!')
+      this.p.message(player, PREFIX + RED + 'Your Parachute was shot down!')
     }
   }
 
@@ -211,7 +211,7 @@ export class Specials implements GameHooks {
   private tickParachutes (game: Game) {
     for (const [player, g] of [...this.glides]) {
       if (!game.isPlaying(player)) { this.closeParachute(player, null); continue }
-      if (game.tick - g.startTick > this.s.parachute.durationSeconds * TICKS_PER_SECOND) { this.closeParachute(player, RED + 'Dein Fallschirm ist kaputt gegangen.'); continue }
+      if (game.tick - g.startTick > this.s.parachute.durationSeconds * TICKS_PER_SECOND) { this.closeParachute(player, RED + 'Your Parachute broke.'); continue }
       if (game.tick - g.startTick > 2 && this.p.onGround(player)) { this.closeParachute(player, null); continue }
       // sneak: the parachute is gone and the player drops (the fall distance of the glide stays reset, as when it ends otherwise)
       const sneaking = this.p.sneaking(player)
@@ -236,12 +236,12 @@ export class Specials implements GameHooks {
   private placeMobileShop (player: PlayerId, at: BlockPos) {
     const air = (y: number) => this.p.blockName(this.game.world, { x: at.x, y, z: at.z }) === 'air'
     if (!air(at.y) || !air(at.y + 1)) {
-      this.p.message(player, PREFIX + RED + 'Hier ist nicht genug Platz für den Shop.')
+      this.p.message(player, PREFIX + RED + 'There is not enough space for the shop here.')
       return
     }
     if (!this.takeOne(player, 'armor_stand')) return
     const l = this.p.location(player)
-    const entity = this.p.spawnShopkeeper(this.game.world, { x: at.x + 0.5, y: at.y, z: at.z + 0.5, yaw: l.yaw + 180, pitch: 0, world: this.game.world }, '§eMobiler Shop')
+    const entity = this.p.spawnShopkeeper(this.game.world, { x: at.x + 0.5, y: at.y, z: at.z + 0.5, yaw: l.yaw + 180, pitch: 0, world: this.game.world }, '§eMobile Shop')
     this.game.entities.add(entity)
     this.mobileShops.push({ entity, removeTick: this.game.tick + this.s.mobileShop.durationSeconds * TICKS_PER_SECOND })
   }
@@ -319,11 +319,11 @@ export class Specials implements GameHooks {
     if (this.game.tick < ready) {
       const seconds = Math.ceil((ready - this.game.tick) / TICKS_PER_SECOND)
       // ScreamingBedWars wording
-      this.p.message(player, PREFIX + RED + `Du musst noch ${seconds} ${seconds === 1 ? 'Sekunde' : 'Sekunden'} warten, bis du die nächste Rettungsplattform benutzen kannst!`)
+      this.p.message(player, PREFIX + RED + `You have to wait ${seconds} more ${seconds === 1 ? 'second' : 'seconds'} before you can use another Rescue Platform!`)
       return
     }
     if (this.p.onGround(player)) {
-      this.p.message(player, PREFIX + RED + 'Die Rettungsplattform geht nur in der Luft.')
+      this.p.message(player, PREFIX + RED + 'The Rescue Platform only works in the air.')
       return
     }
     const l = this.p.location(player)

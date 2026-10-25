@@ -10,27 +10,27 @@ lobbySpawnWorld: bedwars
 minPlayers: 2
 postGameWaiting: 5
 teams:
-  Rot:
+  Red:
     isNewColor: true
     color: RED
     maxPlayers: 4
     bed: 72;105;-1;0.0;0.0
     spawn: 63.5;101;0.0;90.0;0.0
-    actualName: Rot
-  Blau:
+    actualName: Red
+  Blue:
     isNewColor: true
     color: BLUE
     maxPlayers: 4
     bed: -72;105;0;0.0;0.0
     spawn: -62.5;101;-0.0;-90.0;0.0
-    actualName: Blau
+    actualName: Blue
 spawners:
 - location: 65.5;101.0;0.0;0.0;0.0
   type: bronze
   customName: null
   startLevel: 1.0
   hologramEnabled: true
-  team: Rot
+  team: Red
   maxSpawnedResources: -1
 - location: 67.5;101.0;-37.5;0.0;0.0
   type: iron
@@ -44,7 +44,7 @@ spawners:
   customName: null
   startLevel: 1.0
   hologramEnabled: true
-  team: Blau
+  team: Blue
   maxSpawnedResources: -1
 - location: -66.5;101.0;37.5;0.0;0.0
   type: iron

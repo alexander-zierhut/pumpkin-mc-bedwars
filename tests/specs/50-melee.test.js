@@ -711,8 +711,8 @@ module.exports = {
     }
 
     // ================================================================== 10. no cooldown indicator
-    // (the BedWars "Respawn Schutz" action bar at the start of a life is not a cooldown indicator)
-    const otherUi = ui.actionbars.filter(a => !/Respawn Schutz|^\{"text":""\}$/.test(a.text))
+    // (the BedWars "Respawn protection" action bar at the start of a life is not a cooldown indicator)
+    const otherUi = ui.actionbars.filter(a => !/Respawn protection|^\{"text":""\}$/.test(a.text))
     t.check('no attack cooldown title / action bar was sent to the clients during all of the fighting', ui.titles.length === 0 && otherUi.length === 0,
       { titles: ui.titles.slice(0, 5), actionbarsExceptRespawnProtection: otherUi.slice(0, 5), respawnProtectionBars: ui.actionbars.length - otherUi.length })
     t.log('mineflayer health bars', { ATK: ATK.health, VIC: VIC.health, BYS: BYS.health, inv: invSummary(ATK) })

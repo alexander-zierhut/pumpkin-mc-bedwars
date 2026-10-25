@@ -234,11 +234,11 @@ class LanBedWars extends Plugin {
       this.registerCommand(ctx, cmd, (s) => { guard(names[0], undefined, () => reply(s, run(s, []))); return 1 }, perm)
     }
 
-    simple(['start'], 'Startet die Runde (Admin)', PERM_ADMIN, () => bw!.cmdStart())
-    simple(['setteam'], 'Setzt das Team eines Spielers (Admin)', PERM_ADMIN, (_s, a) => bw!.cmdSetTeam(a))
-    simple(['map'], 'Zeigt oder wechselt die Map (Admin)', PERM_ADMIN, (_s, a) => bw!.cmdMap(a))
-    simple(['bwconfig'], 'Ändert Einstellungen zur Laufzeit (Admin)', PERM_ADMIN, (_s, a) => bw!.cmdConfig(a))
-    simple(['autojoin'], 'Auto-Join an/aus', PERM_PLAYER, (s) => { const id = senderId(s); return id ? bw!.cmdAutoJoin(id) : { lines: ['Nur für Spieler.'] } })
+    simple(['start'], 'Starts the game (admin)', PERM_ADMIN, () => bw!.cmdStart())
+    simple(['setteam'], 'Sets a player\'s team (admin)', PERM_ADMIN, (_s, a) => bw!.cmdSetTeam(a))
+    simple(['map'], 'Shows or switches the map (admin)', PERM_ADMIN, (_s, a) => bw!.cmdMap(a))
+    simple(['bwconfig'], 'Changes settings at runtime (admin)', PERM_ADMIN, (_s, a) => bw!.cmdConfig(a))
+    simple(['autojoin'], 'Toggle auto-join', PERM_PLAYER, (s) => { const id = senderId(s); return id ? bw!.cmdAutoJoin(id) : { lines: ['Players only.'] } })
     simple(['bw', 'bedwars'], 'BedWars', PERM_PLAYER, (s, a) => bw!.cmdBw(senderId(s), a, isAdmin(s)))
   }
 

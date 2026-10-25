@@ -22,7 +22,7 @@ test('a purchase takes the price and gives the stack, with the original message'
   assert.equal(r.ok, true)
   assert.equal(total(inv, 'brick'), 10 - end.price.amount)
   assert.equal(total(inv, 'end_stone'), end.stack.count)
-  assert.equal(plain(r.message), `${end.stack.count}x Endstein wurde für ${end.price.amount} Bronze gekauft!`)
+  assert.equal(plain(r.message), `You purchased ${end.stack.count}x End Stone for ${end.price.amount} Bronze!`)
 })
 
 test('too little money: nothing changes, refusal names amount, item and price', () => {
@@ -31,7 +31,7 @@ test('too little money: nothing changes, refusal names amount, item and price', 
   const r = buy(inv, end, { kind: 'once' }, settings, null)
   assert.equal(r.ok, false)
   assert.equal(total(inv, 'brick'), end.price.amount - 1)
-  assert.equal(plain(r.message), `Du hast nicht genug Ressourcen, um ${end.stack.count}x Endstein zu kaufen! Du brauchst ${end.price.amount} Bronze!`)
+  assert.equal(plain(r.message), `You do not have enough resources to buy ${end.stack.count}x End Stone! You need ${end.price.amount} Bronze!`)
 })
 
 test('plain bricks without the resource name are no Bronze', () => {

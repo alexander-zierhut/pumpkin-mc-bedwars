@@ -1,7 +1,8 @@
 # Working on this project
 
 Notes for whoever continues the work (a person or a coding agent), so the state and the decisions do not have to
-be rediscovered. The README covers playing and the everyday commands.
+be rediscovered. The README covers playing and the everyday commands; `AGENTS.md` is the short version for coding
+agents.
 
 ## State (25.10.2026)
 
@@ -21,8 +22,9 @@ be rediscovered. The README covers playing and the everyday commands.
 
 ## Rules the owner set
 
-- Commits are authored by the owner (`zierhut.alex <alex@zierhut-it.de>`), conventional commit with a scope, and
-  never mention AI or carry tool trailers. PR descriptions in the fork start with the AI disclosure line.
+- Commits are authored by the owner (`zierhut.alex <alex@zierhut-it.de>`) and never mention AI or carry tool
+  trailers. This repository uses emoji, `(scope)` and a short description, the fork conventional commits (see
+  `AGENTS.md`). PR descriptions in the fork start with the AI disclosure line.
 - Documents: no em dashes, little bold.
 - Before fixing a Pumpkin bug, search the open upstream PRs and issues for the same fix (`gh pr list -R
   Pumpkin-MC/Pumpkin --search ...`) and reuse or compare instead of starting over.
@@ -41,6 +43,7 @@ be rediscovered. The README covers playing and the everyday commands.
 | First play test and what was done about each point | `PLAYTEST-1.md` |
 | Bow comparison with 1.8.9 | `reports/bow-1.8.9-vs-pumpkin.md` |
 | Fork branches, PR descriptions and the scripts that build, check and open them | `tools/fork/` |
+| Player-visible texts (English): messages, item and shop names, team names | `plugin/src/text.ts`, `config/shop.yml`, `config/arena-*.yml` |
 | Local only (gitignored): the extra maps `maps/rewi_*`, `deploy/`, `work/`, `reference/`, `config/ops.json` | |
 
 The extra maps Mushroom and Mansion are not ours to publish. With them in `maps/`, `tools/apply.sh` installs their

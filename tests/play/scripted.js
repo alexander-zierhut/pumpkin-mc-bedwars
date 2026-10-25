@@ -40,7 +40,7 @@ class Player {
 function inv (st) {
   const items = st.inv ? st.inv.items : []
   let blocks = 0
-  for (const i of items) { const m = /^(Sandstein|Endstein|Glas|Eisenblock|Glowstone)(?: x(\d+))?$/.exec(i); if (m) blocks += Number(m[2] || 1) }
+  for (const i of items) { const m = /^(Sandstone|End Stone|Glass|Iron Block|Glowstone)(?: x(\d+))?$/.exec(i); if (m) blocks += Number(m[2] || 1) }
   return blocks
 }
 
@@ -64,26 +64,26 @@ async function run (players, { log, isOver }) {
 
 async function shopRun (p, bronzeSeconds, blocks) {
   await p.act('collect', { resource: 'bronze', seconds: bronzeSeconds })
-  await p.act('buy', { item: 'Sandstein', count: blocks })
-  for (const it of ['Lederhelm', 'Lederhose', 'Lederschuhe']) await p.act('buy', { item: it })
+  await p.act('buy', { item: 'Sandstone', count: blocks })
+  for (const it of ['Leather Helmet', 'Leather Leggings', 'Leather Boots']) await p.act('buy', { item: it })
 }
 
 async function attacker (p, isOver, log) {
   await shopRun(p, 25, 45)
   await p.act('collect', { resource: 'silver', seconds: 25, bridge: true })
-  for (const it of ['Schwert I', 'Brustplatte I']) await p.act('buy', { item: it })
+  for (const it of ['Sword I', 'Chestplate I']) await p.act('buy', { item: it })
   let lastBridge = 0
   while (!isOver()) {
     const st = await p.state()
     if (st.phase !== 'running') break
     if (!st.alive || st.spectator) { await sleep(2000); continue }
-    const hasWeapon = (st.inv.items || []).some(i => /Schwert|Knüppel/.test(i))
+    const hasWeapon = (st.inv.items || []).some(i => /Sword|Knockback Stick/.test(i))
     if (st.on === 'own_base' && !hasWeapon) {
       // died: re-arm cheaply with bronze items
       await p.act('collect', { resource: 'bronze', seconds: 12 })
-      await p.act('buy', { item: 'Knüppel' })
-      for (const it of ['Lederhelm', 'Lederhose', 'Lederschuhe']) await p.act('buy', { item: it })
-      if (inv(st) < 40) await p.act('buy', { item: 'Sandstein', count: 40 })
+      await p.act('buy', { item: 'Knockback Stick' })
+      for (const it of ['Leather Helmet', 'Leather Leggings', 'Leather Boots']) await p.act('buy', { item: it })
+      if (inv(st) < 40) await p.act('buy', { item: 'Sandstone', count: 40 })
       continue
     }
     const near = st.near.filter(q => q.team && q.team !== st.team && q.d <= 14)
@@ -112,7 +112,7 @@ async function defender (p, isOver, log) {
   // the attacker stands on the bronze pad at the start, so start with the silver spawner instead
   await p.act('collect', { resource: 'silver', seconds: 22, bridge: true })
   await shopRun(p, 18, 20)
-  for (const it of ['Schwert I', 'Brustplatte I']) await p.act('buy', { item: it })
+  for (const it of ['Sword I', 'Chestplate I']) await p.act('buy', { item: it })
   await p.act('defend_bed', { blocks: 12 })
   while (!isOver()) {
     const st = await p.state()
@@ -122,7 +122,7 @@ async function defender (p, isOver, log) {
     if (near.length) { await p.act('attack', { seconds: 12 }); continue }
     if (st.on !== 'own_base') { await p.act('goto', { target: 'own_base' }); continue }
     await p.act('collect', { resource: 'bronze', seconds: 12 })
-    if (inv(st) < 12) { await p.act('buy', { item: 'Sandstein', count: 8 }); await p.act('defend_bed', { blocks: 6 }) }
+    if (inv(st) < 12) { await p.act('buy', { item: 'Sandstone', count: 8 }); await p.act('defend_bed', { blocks: 6 }) }
   }
 }
 

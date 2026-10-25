@@ -101,7 +101,7 @@ async function pickTeam (bot, team) {
   await bot.clickWindow(labels[team].slot, 0, 0)
   await sleep(700)
   const msgs = bot.chatLog.filter(c => c.t >= since && /\[BW\]/.test(c.m)).map(c => c.m)
-  const selected = msgs.find(m => /Ausgewähltes Team/.test(m)) || null
+  const selected = msgs.find(m => /Selected team/.test(m)) || null
   if (bot.currentWindow) { bot.closeWindow(bot.currentWindow); await sleep(100) }
   return { selected, msgs, labelsBefore: Object.fromEntries(Object.entries(labels).map(([k, v]) => [k, v.text])) }
 }
@@ -133,7 +133,7 @@ async function serverOne (t) {
   const a = await t.bot('LobA', { quiet: true })
   const firstPos = pos(a)
   const tLogin = await chatTime(a, /LobA joined the game/, tConnect - 50, 5000)
-  const tJoinMsg = await chatTime(a, new RegExp(`LobA tritt dem Spiel bei! \\[1/${MAX_PLAYERS}\\]`), tConnect - 50, 10000)
+  const tJoinMsg = await chatTime(a, new RegExp(`LobA joined the game! \\[1/${MAX_PLAYERS}\\]`), tConnect - 50, 10000)
   const joinMs = tJoinMsg && tLogin ? tJoinMsg - tLogin : null
   t.check(`fresh connection is auto-joined into the arena lobby (join message [1/${MAX_PLAYERS}])`, !!tJoinMsg, { joinMsAfterLoginMessage: joinMs })
   t.check('auto-join happens within 1.5 s of logging in (tick period 1 s)', joinMs !== null && joinMs <= 1500, { joinMs })
@@ -146,7 +146,7 @@ async function serverOne (t) {
   t.check('lobby player is in survival mode', a.game.gameMode === 'survival', a.game.gameMode)
   const inv = a.inventory.slots.map((i, n) => i ? { n, name: i.name, label: itemName(i) } : null).filter(Boolean)
   t.check('lobby inventory: team selector compass and leave slime ball',
-    inv.some(i => i.name === 'compass' && /Team/.test(i.label)) && inv.some(i => i.name === 'slime_ball' && /verlassen/.test(i.label)), inv)
+    inv.some(i => i.name === 'compass' && /team/i.test(i.label)) && inv.some(i => i.name === 'slime_ball' && /Leave/.test(i.label)), inv)
   const blk = (x, y, z) => { const b = a.blockAt(new Vec3(x, y, z)); return b ? b.name : null }
   const lx = Math.floor(LOBBY.x); const lz = Math.floor(LOBBY.z); const ly = Math.floor(LOBBY.y)
   const geometry = { underSpawn: blk(lx, ly - 1, lz), twoBelow: blk(lx, ly - 2, lz), floorEast: blk(lx + 1, ly - 1, lz), floorSouth: blk(lx, ly - 1, lz + 1), floorWest: blk(lx - 1, ly - 1, lz) }
@@ -165,14 +165,14 @@ async function serverOne (t) {
   }
   t.check(`lone player stays in the lobby for ${PC + 6} s (countdown is ${PC} s)`, !soloEscaped && a.game.gameMode === 'survival',
     { pos: pos(a), minY: Math.min(...soloSamples), seconds: PC + 6 })
-  t.check('lone player got no game start / team assignment messages', chatCount(a, /Ausgewähltes Team|Spiel startet|Das Spiel hat begonnen/i, tSolo) === 0,
+  t.check('lone player got no game start / team assignment messages', chatCount(a, /Selected team|game starts|Game started/i, tSolo) === 0,
     a.chatLog.filter(c => c.t >= tSolo).map(c => c.m))
 
   // ---- 3. /bw leave and auto-join -------------------------------------------------------------------------
   const tLeave0 = Date.now()
   a.chat('/bw leave')
-  const tLeft = await chatTime(a, /LobA hat das Spiel verlassen/, tLeave0 - 50, 5000)
-  const tRejoin = await chatTime(a, /LobA tritt dem Spiel bei/, (tLeft || tLeave0) + 1, 6000)
+  const tLeft = await chatTime(a, /LobA left the game/, tLeave0 - 50, 5000)
+  const tRejoin = await chatTime(a, /LobA joined the game/, (tLeft || tLeave0) + 1, 6000)
   t.check('/bw leave removes the player from the arena (leave message)', !!tLeft)
   const rejoinMs = tRejoin && tLeft ? tRejoin - tLeft : null
   t.check('auto-join re-adds a player who left, within ~1 s (tick period 1 s)', rejoinMs !== null && rejoinMs <= 2200, { rejoinMs })
@@ -184,8 +184,8 @@ async function serverOne (t) {
   const tAuto0 = Date.now()
   a.chat('/autojoin')
   await sleep(1200)
-  const blocked = chatCount(a, /während des Spiels nicht verfügbar/, tAuto0)
-  const toggled = chatCount(a, /Auto-Join deaktiviert/, tAuto0)
+  const blocked = chatCount(a, /not available during the game/, tAuto0)
+  const toggled = chatCount(a, /Auto-join disabled/, tAuto0)
   t.check('/autojoin can be used by a normal player while in the arena lobby', toggled === 1 && blocked === 0,
     { toggled, blockedByBedWars: blocked, chat: a.chatLog.filter(c => c.t >= tAuto0).map(c => c.m) })
   if (!toggled) {
@@ -195,11 +195,11 @@ async function serverOne (t) {
     await sleep(600)
     const t1 = Date.now()
     a.chat('/autojoin')
-    t.check('(workaround) opped player can toggle /autojoin off', !!(await chatTime(a, /Auto-Join deaktiviert/, t1, 4000)))
+    t.check('(workaround) opped player can toggle /autojoin off', !!(await chatTime(a, /Auto-join disabled/, t1, 4000)))
   }
   const tOff = Date.now()
   a.chat('/bw leave')
-  const tOffLeft = await chatTime(a, /LobA hat das Spiel verlassen/, tOff - 50, 4000)
+  const tOffLeft = await chatTime(a, /LobA left the game/, tOff - 50, 4000)
   t.check('/bw leave works with auto-join off', !!tOffLeft)
   // where does the player end up? BedWars restores the location from before joining; that must be the waiting lobby
   const fall = []
@@ -210,17 +210,17 @@ async function serverOne (t) {
   if (fellInVoid) await s.cmd(`tp LobA ${LOBBY.x} ${LOBBY.y} ${LOBBY.z}`)
   await sleep(2600)
   const listOff = await bwList(s)
-  t.check('with /autojoin off the player is NOT put back into the arena', chatCount(a, /LobA tritt dem Spiel bei/, tOffLeft || tOff) === 0 && arenaCount(listOff, MAPNAME) === 0, { bwList: listOff })
+  t.check('with /autojoin off the player is NOT put back into the arena', chatCount(a, /LobA joined the game/, tOffLeft || tOff) === 0 && arenaCount(listOff, MAPNAME) === 0, { bwList: listOff })
   const tOn = Date.now()
   a.chat('/autojoin')
-  const tBack = await chatTime(a, /LobA tritt dem Spiel bei/, tOn, 5000)
+  const tBack = await chatTime(a, /LobA joined the game/, tOn, 5000)
   t.check('/autojoin again re-enables auto-join (player re-added within ~2 s)', !!tBack && tBack - tOn <= 2500, { ms: tBack ? tBack - tOn : null })
   await sleep(700)
   t.check('player is back in the lobby box after re-enabling', inLobbyBox(a.entity.position), pos(a))
 
   // ---- 5. countdown: starts with the 2nd player, aborts below minPlayers, restarts from full ---------------
   let b = await t.bot('LobB', { quiet: true })
-  const tJoinB1 = await chatTime(a, new RegExp(`LobB tritt dem Spiel bei! \\[2/${MAX_PLAYERS}\\]`), tOn, 5000)
+  const tJoinB1 = await chatTime(a, new RegExp(`LobB joined the game! \\[2/${MAX_PLAYERS}\\]`), tOn, 5000)
   t.check(`second player joins the same lobby ([2/${MAX_PLAYERS}])`, !!tJoinB1)
   await sleep(2500) // countdown is running
   const tQuitB = Date.now()
@@ -231,7 +231,7 @@ async function serverOne (t) {
     { pos: pos(a), bwList: listAbort, chatSinceB: a.chatLog.filter(c => c.t >= tJoinB1).map(c => c.m), waitedSinceQuitSec: r1((Date.now() - tQuitB) / 1000) })
 
   b = await t.bot('LobB', { quiet: true })
-  const tJoinB2 = await chatTime(a, new RegExp(`LobB tritt dem Spiel bei! \\[2/${MAX_PLAYERS}\\]`), tQuitB, 5000)
+  const tJoinB2 = await chatTime(a, new RegExp(`LobB joined the game! \\[2/${MAX_PLAYERS}\\]`), tQuitB, 5000)
   // two more join right behind B while the countdown runs (must not restart or shorten it); 4 players -> 2 v 2
   const [d, e] = await Promise.all(['LobD', 'LobE'].map(n => t.bot(n, { quiet: true })))
   const players = [a, b, d, e]
@@ -353,12 +353,12 @@ async function serverTwo (t, parent) {
     const nBots = Math.max(capS + 1, 2 + capB) + 1
     const names = Array.from({ length: nBots }, (_, i) => 'Lob' + (i + 1))
     const [b1, b2] = await Promise.all(names.slice(0, 2).map(connect))
-    const tJoin2 = await chatTime(b1, /tritt dem Spiel bei! \[2\//, 0, 8000)
+    const tJoin2 = await chatTime(b1, /joined the game! \[2\//, 0, 8000)
     t.check('server 2: the 2nd player joined message was seen (countdown start reference)', !!tJoin2)
     const tCountdown0 = tJoin2 || Date.now()
     const rest = await Promise.all(names.slice(2).map(connect))
     const bs = [b1, b2, ...rest]
-    t.check(`${nBots} bots are all auto-joined into the lobby`, (await Promise.all(bs.map(b => chatTime(b, new RegExp(b.username + ' tritt dem Spiel bei'), 0, 8000)))).every(Boolean),
+    t.check(`${nBots} bots are all auto-joined into the lobby`, (await Promise.all(bs.map(b => chatTime(b, new RegExp(b.username + ' joined the game'), 0, 8000)))).every(Boolean),
       bs.map(b => b.username + ':' + pos(b).y))
     await sleep(800)
 
@@ -378,7 +378,7 @@ async function serverTwo (t, parent) {
     const over = bs[capS]
     const rOver = await pickTeam(over, S)
     t.check(`selector shows ${S} as full (${capS} / ${capS}) to the next player`, sq(rOver.labelsBefore[S]) === `${S} (${capS} / ${capS})`, rOver.labelsBefore)
-    t.check(`player ${capS + 1} is rejected from full team ${S} (never more than ${capS})`, !rOver.selected && rOver.msgs.some(m => new RegExp(`Team ${re(S)} ist voll`).test(m)) && wool(over).length === 0, { msgs: rOver.msgs, wool: wool(over) })
+    t.check(`player ${capS + 1} is rejected from full team ${S} (never more than ${capS})`, !rOver.selected && rOver.msgs.some(m => new RegExp(`Team ${re(S)}.* is full`).test(m)) && wool(over).length === 0, { msgs: rOver.msgs, wool: wool(over) })
     const afterFull = await selectorLabels(over)
     t.check(`${S} still has exactly ${capS} members after the rejected pick`, sq(afterFull[S]) === `${S} (${capS} / ${capS})`, afterFull)
 
@@ -398,7 +398,7 @@ async function serverTwo (t, parent) {
     const rLast = await pickTeam(last, B)
     const lL = Object.fromEntries(Object.entries(rLast.labelsBefore).map(([k, v]) => [k, sq(v)]))
     t.check(`selector (as seen by a teamless player) reads ${S} (${2} / ${capS}) and ${B} (${capB} / ${capB})`, lL[S] === `${S} (2 / ${capS})` && lL[B] === `${B} (${capB} / ${capB})`, lL)
-    t.check(`last player is rejected from full team ${B}`, !rLast.selected && rLast.msgs.some(m => new RegExp(`Team ${re(B)} ist voll`).test(m)) && wool(last).length === 0, { msgs: rLast.msgs })
+    t.check(`last player is rejected from full team ${B}`, !rLast.selected && rLast.msgs.some(m => new RegExp(`Team ${re(B)}.* is full`).test(m)) && wool(last).length === 0, { msgs: rLast.msgs })
     const tSelectDone = Date.now()
     last.quit()
 
@@ -419,7 +419,7 @@ async function serverTwo (t, parent) {
     for (const b of play) states.push(await serverState(server, b.username))
     const spawnOk = states.every((x, i) => atTeamSpawn({ x: x.pos[0], y: x.pos[1], z: x.pos[2] }, teams[i]) && x.gm === 0)
     t.check('all players stand at their team spawn in survival mode', spawnOk, states.map((x, i) => `${play[i].username}:${teams[i]}:${x.pos.map(r1)}:gm${x.gm}`))
-    const selectorGone = play.every(b => !b.inventory.items().some(i => i.name === 'compass' && /Team/.test(itemName(i) || '')))
+    const selectorGone = play.every(b => !b.inventory.items().some(i => i.name === 'compass' && /team/i.test(itemName(i) || '')))
     t.check('lobby items (team selector) are removed when the game starts', selectorGone, play.map(b => b.inventory.items().map(i => i.name).join(',')))
   } finally {
     const errs = realErrors(server)
@@ -459,21 +459,21 @@ async function serverThree (t, parent) {
     const clean = x => plain(x).replace(/\s+/g, ' ').trim()
     const P1 = await connect('MapOp')
     const P2 = await connect('MapUser')
-    await Promise.all([P1, P2].map(p => chatTime(p, new RegExp(p.username + ' tritt dem Spiel bei'), 0, 8000)))
+    await Promise.all([P1, P2].map(p => chatTime(p, new RegExp(p.username + ' joined the game'), 0, 8000)))
     await sleep(800)
     const list0 = await bwList(s)
     t.check(`server knows both arenas, both players wait in ${MAPNAME}`, arenaCount(list0, MAPNAME) === 2 && arenaCount(list0, OTHER) === 0, list0)
 
     // console: "map" lists
     const c0 = clean(await s.cmd('map'))
-    t.check('console "map" shows the active map and lists all maps', new RegExp(`Aktive Map: ${re(MAPNAME)}`).test(c0) && new RegExp(`Maps: .*${re(MAPNAME)}`).test(c0) && new RegExp(`Maps: .*${re(OTHER)}`).test(c0), c0)
+    t.check('console "map" shows the active map and lists all maps', new RegExp(`Active map: ${re(MAPNAME)}`).test(c0) && new RegExp(`Maps: .*${re(MAPNAME)}`).test(c0) && new RegExp(`Maps: .*${re(OTHER)}`).test(c0), c0)
 
     // non-op in game cannot switch
     const tU = Date.now()
     P2.chat(`/map ${OTHER}`)
     await sleep(1500)
     const cAfterU = clean(await s.cmd('map'))
-    t.check('a normal player cannot switch the map (no permission)', new RegExp(`Aktive Map: ${re(MAPNAME)}`).test(cAfterU) && arenaCount(await bwList(s), MAPNAME) === 2,
+    t.check('a normal player cannot switch the map (no permission)', new RegExp(`Active map: ${re(MAPNAME)}`).test(cAfterU) && arenaCount(await bwList(s), MAPNAME) === 2,
       { chat: P2.chatLog.filter(c => c.t >= tU).map(c => c.m), console: cAfterU })
 
     // op in game: /map lists, /map Zwei switches
@@ -483,13 +483,13 @@ async function serverThree (t, parent) {
     P1.chat('/map')
     await sleep(1200)
     const listed = P1.chatLog.filter(c => c.t >= tL).map(c => clean(c.m))
-    t.check('op can use /map in the arena lobby (BedWars command whitelist lets it through) and gets the map list', listed.some(m => new RegExp(`Aktive Map: ${re(MAPNAME)}`).test(m)) && listed.some(m => new RegExp(`Maps: .*${re(OTHER)}`).test(m)), listed)
+    t.check('op can use /map in the arena lobby (BedWars command whitelist lets it through) and gets the map list', listed.some(m => new RegExp(`Active map: ${re(MAPNAME)}`).test(m)) && listed.some(m => new RegExp(`Maps: .*${re(OTHER)}`).test(m)), listed)
 
     const tS = Date.now()
     P1.chat(`/map ${OTHER}`)
-    const bc = await chatTime(P2, new RegExp(`Nächste Map: ${re(OTHER)}`), tS - 50, 4000)
+    const bc = await chatTime(P2, new RegExp(`Next map: ${re(OTHER)}`), tS - 50, 4000)
     t.check('map switch is announced to all players', !!bc, P2.chatLog.filter(c => c.t >= tS).map(c => c.m))
-    const joinedOther = await Promise.all([P1, P2].map(p => chatTime(p, new RegExp(p.username + ' tritt dem Spiel bei'), tS, 5000)))
+    const joinedOther = await Promise.all([P1, P2].map(p => chatTime(p, new RegExp(p.username + ' joined the game'), tS, 5000)))
     await sleep(800)
     const list1 = await bwList(s)
     t.check(`after /map ${OTHER} the waiting players are moved to ${OTHER} (auto-join)`, joinedOther.every(Boolean) && arenaCount(list1, OTHER) === 2 && arenaCount(list1, MAPNAME) === 0, { list1, rejoinMs: joinedOther.map(x => x && x - tS) })
@@ -501,7 +501,7 @@ async function serverThree (t, parent) {
     // a fresh connection now spawns in the lobby of the new map and is auto-joined there
     const P3 = await connect('MapNew')
     const p3 = pos(P3)
-    await chatTime(P3, /MapNew tritt dem Spiel bei/, 0, 6000)
+    await chatTime(P3, /MapNew joined the game/, 0, 6000)
     await sleep(500)
     const list2 = await bwList(s)
     t.check(`a fresh player spawns directly in the ${OTHER} lobby (not in the void or the old lobby) and joins ${OTHER}`, nearSpot(p3, otherLobby, 2, 2) && arenaCount(list2, OTHER) === 3, { firstPos: p3, list2 })
@@ -511,13 +511,13 @@ async function serverThree (t, parent) {
     // console: unknown name first (active map is OTHER here, so it must stay OTHER), then switch back with a differently cased name
     const cBad = clean(await s.cmd('map Nirgendwo'))
     const cStill = clean(await s.cmd('map'))
-    t.check('unknown map name is rejected and the active map is unchanged', /Unbekannte Map/.test(cBad) && new RegExp(`Aktive Map: ${re(OTHER)}`).test(cStill), { cBad, cStill })
+    t.check('unknown map name is rejected and the active map is unchanged', /Unknown map/.test(cBad) && new RegExp(`Active map: ${re(OTHER)}`).test(cStill), { cBad, cStill })
     const odd = MAPNAME.toLowerCase() !== MAPNAME ? MAPNAME.toLowerCase() : MAPNAME.toUpperCase()
     const tB = Date.now()
     const cBack = clean(await s.cmd(`map ${odd}`))
     await sleep(3000)
     const cSame = clean(await s.cmd('map'))
-    t.check(`console "map ${odd}" is case-insensitive and really changes the active map from ${OTHER} to ${MAPNAME}`, new RegExp(`Aktive Map: ${re(MAPNAME)}`).test(cSame) && !new RegExp(`Aktive Map: ${re(OTHER)}`).test(cSame), { cBack, cSame })
+    t.check(`console "map ${odd}" is case-insensitive and really changes the active map from ${OTHER} to ${MAPNAME}`, new RegExp(`Active map: ${re(MAPNAME)}`).test(cSame) && !new RegExp(`Active map: ${re(OTHER)}`).test(cSame), { cBack, cSame })
     const list3 = await bwList(s)
     t.check(`switching back: players are moved to the ${MAPNAME} lobby`, arenaCount(list3, MAPNAME) === 2 && arenaCount(list3, OTHER) === 0 && [P1, P2].every(p => nearSpot(p.entity.position, LOBBY)),
       { list3, pos: [pos(P1), pos(P2)], sinceMs: Date.now() - tB })

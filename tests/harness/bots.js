@@ -96,7 +96,7 @@ async function waitForGameStart (bot, timeout = 90000) {
   return teamOf(bot)
 }
 
-/** Name of the team whose spawn is closest to the bot (e.g. 'Rot' or 'Blau'). */
+/** Name of the team whose spawn is closest to the bot (e.g. 'Red' or 'Blue'). */
 function teamOf (bot) {
   return Object.values(MAP.teams).sort((x, y) => spawnDist(bot, x) - spawnDist(bot, y))[0].name
 }

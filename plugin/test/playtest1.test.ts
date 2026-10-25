@@ -36,10 +36,10 @@ test('game bossbar: the text stays, the green bar runs down with the game time, 
   ;(g.arena as { gameTime: number }).gameTime = 100
   s.bw.cmdStart()
   for (let i = 0; i < 200 && g.phase !== 'running'; i++) s.tick()
-  assert.deepEqual(s.fake.bossbars.get('Alex'), { text: 'Spiel läuft, viel Glück!', progress: 1, color: 'green' })
+  assert.deepEqual(s.fake.bossbars.get('Alex'), { text: 'Game in progress, good luck!', progress: 1, color: 'green' })
   s.seconds(50)
   const half = s.fake.bossbars.get('Bea')!
-  assert.equal(half.text, 'Spiel läuft, viel Glück!')
+  assert.equal(half.text, 'Game in progress, good luck!')
   assert.ok(Math.abs(half.progress - 0.5) <= 0.02, `about half the time is over: ${half.progress}`)
   s.seconds(25)
   assert.ok(s.fake.bossbars.get('Alex')!.progress < 0.3)
@@ -116,7 +116,7 @@ test('the glider shooting never shoots his own parachute down, others and unattr
   assert.equal(s.bw.onEntityDamage(chicken, b, 'arrow', true), true)
   assert.equal(sp.glides.has(a), false)
   assert.equal(s.fake.entities.has(chicken), false)
-  assert.ok(s.fake.p(a).chat.some(m => /Fallschirm wurde abgeschossen/.test(m)))
+  assert.ok(s.fake.p(a).chat.some(m => /Parachute was shot down/.test(m)))
 })
 
 test('an explosion or fire still takes the parachute down at once', () => {
@@ -127,8 +127,8 @@ test('an explosion or fire still takes the parachute down at once', () => {
 
 // ---------------------------------------------------------------- point 13: death message
 
-test('hearts: half hearts with a German decimal comma', () => {
-  assert.deepEqual([20, 13, 12, 1, 0.4, 7.6, 0].map(hearts), ['10', '6,5', '6', '0,5', '0,5', '4', '0'])
+test('hearts: half hearts with a decimal point', () => {
+  assert.deepEqual([20, 13, 12, 1, 0.4, 7.6, 0].map(hearts), ['10', '6.5', '6', '0.5', '0.5', '4', '0'])
 })
 
 test('kill message: victim was killed by killer, plus the killer hearts', () => {
@@ -137,8 +137,8 @@ test('kill message: victim was killed by killer, plus the killer hearts', () => 
   assert.equal(s.bw.onPlayerDamage(b, a), false)
   s.fake.kill(b)
   s.tick()
-  const msg = s.fake.p(a).chat.find(m => /getötet/.test(m))!
-  assert.equal(msg, '[BW] Bea wurde von Alex getötet! (❤ 6,5)')
+  const msg = s.fake.p(a).chat.find(m => /was killed/.test(m))!
+  assert.equal(msg, '[BW] Bea was killed by Alex! (❤ 6.5)')
   assert.ok(s.fake.p(b).chat.includes(msg), 'everybody gets it')
   assert.equal(g.players.get(b)!.state, 'playing', 'not a final kill: the bed stands')
 })
@@ -151,8 +151,8 @@ test('final kill carries the hearts and the final kill tag', () => {
   s.bw.onPlayerDamage(b, a)
   s.fake.kill(b)
   s.tick()
-  const msg = s.fake.p(a).chat.find(m => /getötet/.test(m))!
-  assert.equal(msg, '[BW] Bea wurde von Alex getötet! (❤ 10) FINALER KILL')
+  const msg = s.fake.p(a).chat.find(m => /was killed/.test(m))!
+  assert.equal(msg, '[BW] Bea was killed by Alex! (❤ 10) FINAL KILL')
 })
 
 test('knocked into the void: the last attacker is credited like a normal kill', () => {
@@ -162,7 +162,7 @@ test('knocked into the void: the last attacker is credited like a normal kill', 
   const limit = s.bw.settings.voidKill[g.world]
   s.bw.onMove(b, { x: 0, y: limit - 1, z: 0 })
   s.tick()
-  assert.equal(s.fake.p(a).chat.find(m => /getötet/.test(m)), '[BW] Bea wurde von Alex getötet! (❤ 3,5)')
+  assert.equal(s.fake.p(a).chat.find(m => /was killed/.test(m)), '[BW] Bea was killed by Alex! (❤ 3.5)')
   assert.equal(s.bw.stats.get('Alex').kills, 1)
 })
 
@@ -170,7 +170,7 @@ test('without a recent attacker it is a plain death, without hearts', () => {
   const { s, a, b } = startRound()
   s.fake.kill(b)
   s.tick()
-  assert.equal(s.fake.p(a).chat.find(m => /gestorben/.test(m)), '[BW] Bea ist gestorben!')
+  assert.equal(s.fake.p(a).chat.find(m => /died/.test(m)), '[BW] Bea died!')
 })
 
 test('no hearts when the killer died in the same moment', () => {
@@ -179,8 +179,8 @@ test('no hearts when the killer died in the same moment', () => {
   s.fake.kill(a)
   s.fake.kill(b)
   s.tick()
-  const msg = s.fake.p(a).chat.find(m => /Alex wurde von Bea/.test(m))!
-  assert.equal(msg, '[BW] Alex wurde von Bea getötet!')
+  const msg = s.fake.p(a).chat.find(m => /Alex was killed by Bea/.test(m))!
+  assert.equal(msg, '[BW] Alex was killed by Bea!')
 })
 
 // ---------------------------------------------------------------- point 16: bow durability

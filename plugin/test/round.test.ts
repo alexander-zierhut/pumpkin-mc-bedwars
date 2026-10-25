@@ -42,7 +42,7 @@ test('spawners drop the named resources once the round runs', () => {
   s.seconds(11)
   const drops = [...s.fake.entities.values()].filter(e => e.type === 'item' && e.world === g.world)
   const names = new Set(drops.map(e => `${e.item!.id}:${e.item!.name}`))
-  assert.ok(names.has('brick:§4Bronze') && names.has('iron_ingot:§7Silber'), [...names].join(', '))
+  assert.ok(names.has('brick:§4Bronze') && names.has('iron_ingot:§7Iron'), [...names].join(', '))
 })
 
 test('a purchase in the shop takes the price and gives the item', () => {
@@ -56,7 +56,7 @@ test('a purchase in the shop takes the price and gives the item', () => {
   const inv = s.fake.p(a).slots
   assert.equal(inv.filter(x => x?.id === sandstone.stack.id).reduce((n, x) => n + x!.count, 0), sandstone.stack.count)
   assert.equal(inv.filter(x => x?.id === 'brick').reduce((n, x) => n + x!.count, 0), 10 - sandstone.price.amount)
-  assert.ok(s.fake.p(a).chat.some(m => m.includes(`${sandstone.stack.count}x Sandstein wurde für`)))
+  assert.ok(s.fake.p(a).chat.some(m => m.includes(`You purchased ${sandstone.stack.count}x Sandstone for`)))
 })
 
 test('bed, final kill, win, statistics and the reset into the lobby', () => {
@@ -66,7 +66,7 @@ test('bed, final kill, win, statistics and the reset into the lobby', () => {
   const res = s.bw.onBlockBreak(a, tb.def.bed, `${tb.def.color.dye}_bed`)
   assert.equal(res.allow, true)
   assert.equal(tb.bed, false)
-  assert.ok(s.fake.p(b).chat.some(m => /Das Bett von Team .* wurde .*zerstört/.test(m)))
+  assert.ok(s.fake.p(b).chat.some(m => /The bed of team .* was destroyed/.test(m)))
   // Bea's own bed may not be broken by herself... (Alex's bed is still there)
   const ta = g.teamOf(a)!
   assert.equal(s.bw.onBlockBreak(a, ta.def.bed, `${ta.def.color.dye}_bed`).allow, false, 'nobody breaks the own bed')
@@ -75,10 +75,10 @@ test('bed, final kill, win, statistics and the reset into the lobby', () => {
   s.fake.kill(b)
   s.tick()
   assert.equal(g.players.get(b)!.state, 'spectator')
-  assert.ok(s.fake.p(a).chat.some(m => /FINALER KILL/.test(m)))
+  assert.ok(s.fake.p(a).chat.some(m => /FINAL KILL/.test(m)))
   assert.equal(g.phase, 'ending')
-  assert.ok(s.fake.p(b).chat.some(m => new RegExp(`Das Team ${ta.def.name} hat das Spiel in .* gewonnen`).test(m)))
-  assert.ok(s.fake.p(a).titles.some(t => /Dein Team hat gewonnen/.test(t)))
+  assert.ok(s.fake.p(b).chat.some(m => new RegExp(`Team ${ta.def.name} won the game in `).test(m)))
+  assert.ok(s.fake.p(a).titles.some(t => /Your team won/.test(t)))
   // statistics, saved in the data folder
   assert.deepEqual([s.bw.stats.get('Alex').kills, s.bw.stats.get('Alex').beds, s.bw.stats.get('Alex').wins], [1, 1, 1])
   assert.deepEqual([s.bw.stats.get('Bea').deaths, s.bw.stats.get('Bea').losses], [1, 1])
@@ -100,5 +100,5 @@ test('a disconnected lone player keeps the team in the game for the grace period
   s.seconds(4)
   assert.equal(tb.out, true, 'eliminated after the grace period')
   assert.equal(g.phase, 'ending', 'and the other team has won')
-  assert.ok(s.fake.p(a).chat.some(m => /gewonnen/.test(m)))
+  assert.ok(s.fake.p(a).chat.some(m => /won the game/.test(m)))
 })

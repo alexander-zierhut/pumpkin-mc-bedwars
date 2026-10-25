@@ -47,7 +47,7 @@ export interface TeamState {
 
 interface SpawnerState { def: SpawnerDef, next: number, holo: number | null }
 
-/** Hooks for the special items (Teleporter, Fallschirm, TNT, ...), see specials.ts. */
+/** Hooks for the special items (Teleporter, Parachute, TNT, ...), see specials.ts. */
 export interface GameHooks {
   onStart (game: Game): void
   onTick (game: Game): void
@@ -128,7 +128,7 @@ export class Game {
     if (this.players.has(p)) return
     if (this.phase === 'waiting') {
       if (this.inLobby().length >= this.maxPlayers) {
-        this.platform.message(p, PREFIX + fmt('§cSpiel §7%arena% §cist voll!', { arena: this.name }))
+        this.platform.message(p, PREFIX + fmt(MSG.gameFull, { arena: this.name }))
         return
       }
       this.players.set(p, { id: p, team: null, state: 'lobby', dead: false, protectedUntil: 0, lastHit: null, menu: null })
@@ -294,7 +294,7 @@ export class Game {
     for (const p of this.inLobby()) this.platform.setBossbar(p, MSG.bossbarWaiting, Math.max(0, Math.min(1, this.countdown / total)), 'yellow')
     if (this.countdown <= 10 || this.countdown === 30 || this.countdown === 60) {
       for (const p of this.inLobby()) {
-        this.platform.message(p, PREFIX + fmt(MSG.countdown, { seconds: this.countdown }))
+        this.platform.message(p, PREFIX + (this.countdown === 1 ? MSG.countdownOne : fmt(MSG.countdown, { seconds: this.countdown })))
         if (this.countdown <= 5) this.platform.title(p, `§c${this.countdown}`, '', 0, 20, 0)
         this.platform.sound(p, 'ui.button.click', 1, 1)
       }
@@ -822,9 +822,9 @@ export class Game {
     this.setSidebar('§e§lBEDWARS', [
       ' ',
       `§fMap: §2${this.name}`,
-      `§fSpieler: §2${this.inLobby().length}§f/§2${this.maxPlayers}`,
+      `§fPlayers: §2${this.inLobby().length}§f/§2${this.maxPlayers}`,
       '  ',
-      '§fWarten ...',
+      '§fWaiting ...',
       '   '
     ])
   }

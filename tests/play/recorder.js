@@ -196,7 +196,7 @@ function sampleFrame () {
     if (!st.alive && alive && t - st.deadAt > 100) {
       st.alive = true
       justRespawned = true
-      if (!(team && bedAlive[team] === false)) event('respawn', `${name} ist wieder im Spiel`, { players: [name], team })
+      if (!(team && bedAlive[team] === false)) event('respawn', `${name} is back in the game`, { players: [name], team })
     }
     if (st.alive && !justRespawned) {
       const jump = Math.hypot(pos.x - st.last.x, pos.y - st.last.y, pos.z - st.last.z)
@@ -204,14 +204,14 @@ function sampleFrame () {
         const sp = team ? MAP.teams[team].spawn : null
         const nearSpawn = sp && Math.hypot(pos.x - sp.x, pos.z - sp.z) < 4
         const died = recentDeath.get(name)
-        if (nearSpawn && died !== undefined && t - died < 8000) event('respawn', `${name} ist wieder im Spiel`, { players: [name], team })
+        if (nearSpawn && died !== undefined && t - died < 8000) event('respawn', `${name} is back in the game`, { players: [name], team })
         else if (nearSpawn) event('teleport', `${name} wurde zur Basis teleportiert`, { players: [name], team, from: [r2(st.last.x), r2(st.last.y), r2(st.last.z)] })
       }
     }
     st.last = pos.clone(); st.lastT = t
     let riding = null
     for (const c of chickens) if (Math.abs(c.position.x - pos.x) < 1.3 && Math.abs(c.position.z - pos.z) < 1.3 && c.position.y - pos.y > 0.8 && c.position.y - pos.y < 2.6) { riding = 'chicken'; break }
-    if (riding && !st.riding) event('parachute', `${name} öffnet den Fallschirm`, { players: [name], team })
+    if (riding && !st.riding) event('parachute', `${name} opens the Parachute`, { players: [name], team })
     st.riding = riding
     const held = e.equipment && e.equipment[0] ? e.equipment[0].name : (e.heldItem ? e.heldItem.name : null)
     players[name] = {
@@ -232,7 +232,7 @@ function maybeObservedDeath (name, team, t) {
     const last = recentDeath.get(name)
     if (recording && !(last !== undefined && last >= t - 4000)) {
       const final = team && bedAlive[team] === false
-      const e = event('death', `${name} ist gestorben`, { players: [name], team, final: !!final, observed: true })
+      const e = event('death', `${name} died`, { players: [name], team, final: !!final, observed: true })
       if (e) e.t = t
     }
   }, 4500)
@@ -362,7 +362,7 @@ function start () {
   bot.on('messagestr', m => {
     lines.push(L.clean(m))
     // if we were auto-joined before /autojoin took effect (waiting lobby), leave again and stay out until the game runs
-    if (!recording && new RegExp(`${NAME} tritt dem Spiel bei`).test(L.clean(m))) { log('was auto-joined into the lobby; leaving'); setTimeout(() => bot.chat('/bw leave'), 300) }
+    if (!recording && new RegExp(`${NAME} joined the game`).test(L.clean(m))) { log('was auto-joined into the lobby; leaving'); setTimeout(() => bot.chat('/bw leave'), 300) }
     if (/Auto-Join (de)?aktiviert/.test(m)) {
       // the toggle must end up as "deaktiviert"; if it says aktiviert we toggled it back on
       if (/Auto-Join aktiviert/.test(L.clean(m))) setTimeout(() => bot.chat('/autojoin'), 200)
@@ -407,7 +407,7 @@ async function main () {
       t0 = Date.now()
       recording = true
       rec.meta.recordedAt = new Date().toISOString()
-      event('game_start', 'Das Spiel hat begonnen', {})
+      event('game_start', 'Game started', {})
       for (let attempt = 0; attempt < 5 && !phaseRunning(); attempt++) {
         bot.chat('/bw join ' + MAP.name)
         for (let i = 0; i < 16 && !phaseRunning(); i++) await sleep(250)

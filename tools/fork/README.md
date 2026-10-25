@@ -18,7 +18,7 @@ upstream Pumpkin-MC/Pumpkin) has one combined branch and one branch per fix:
 | `check.sh <branch>...` | cargo fmt, clippy (all targets and features) and tests on the crates Pumpkin's CI would pick, in the Rust container, 12 cores, one at a time (`build/.build.lock`); summary in `work/fork/checks/summary.txt` |
 | `open_prs.py pr-descriptions.json [--dry-run]` | pushes the branches to `mine` and opens the missing PRs (`gh pr create -R alexander-zierhut/pumpkin-mc-pvp --base master`, never upstream) |
 
-Setup once (the work folder is `work/fork`, override with `FORK_WORK`):
+Setup once per checkout (the work folder `work/fork` is local and gitignored, override with `FORK_WORK`):
 
 ```bash
 git -C vendor/Pumpkin fetch mine

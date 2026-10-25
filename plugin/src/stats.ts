@@ -36,20 +36,20 @@ export class Stats {
 
   save () { this.platform.writeData(FILE, stringify(this.all)) }
 
-  /** The `/bw stats` answer (German, like the ScreamingBedWars language file). */
+  /** The `/bw stats` answer (English). */
   lines (name: string): string[] {
     const s = this.get(name)
     const kd = s.deaths === 0 ? s.kills : s.kills / s.deaths
     return [
-      `Statistiken von Spieler ${name}:`,
+      `Stats of player ${name}:`,
       `§7Kills: §f${s.kills}`,
-      `§7Tode: §f${s.deaths}`,
+      `§7Deaths: §f${s.deaths}`,
       `§7K/D: §f${kd.toFixed(1)}`,
-      `§7Siege: §f${s.wins}`,
-      `§7Niederlagen: §f${s.losses}`,
-      `§7Spiele: §f${s.games}`,
-      `§7Zerstörte Betten: §f${s.beds}`,
-      `§7Punkte: §f${this.score(s)}`
+      `§7Wins: §f${s.wins}`,
+      `§7Losses: §f${s.losses}`,
+      `§7Games: §f${s.games}`,
+      `§7Beds destroyed: §f${s.beds}`,
+      `§7Score: §f${this.score(s)}`
     ]
   }
 }

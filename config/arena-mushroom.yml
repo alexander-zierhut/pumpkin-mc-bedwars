@@ -10,34 +10,34 @@ lobbySpawnWorld: rewi_mushroom
 minPlayers: 2
 postGameWaiting: 5
 teams:
-  Rot:
+  Red:
     isNewColor: true
     color: RED
     maxPlayers: 4
     bed: 33;88;2;0.0;0.0
     spawn: 29.5;88;11.5;0.0;0.0
-    actualName: Rot
-  Lila:
+    actualName: Red
+  Purple:
     isNewColor: true
     color: MAGENTA
     maxPlayers: 4
     bed: 23;88;154;0.0;0.0
     spawn: 27.5;88;145.5;180.0;0.0
-    actualName: Lila
+    actualName: Purple
 spawners:
 - location: 21.5;84.0;9.5;0.0;0.0
   type: bronze
   customName: null
   startLevel: 1.0
   hologramEnabled: true
-  team: Rot
+  team: Red
   maxSpawnedResources: -1
 - location: 35.5;84.0;147.5;0.0;0.0
   type: bronze
   customName: null
   startLevel: 1.0
   hologramEnabled: true
-  team: Lila
+  team: Purple
   maxSpawnedResources: -1
 - location: 74.5;88.0;0.5;0.0;0.0
   type: iron

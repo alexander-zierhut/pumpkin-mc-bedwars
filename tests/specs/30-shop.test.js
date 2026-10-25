@@ -1,8 +1,8 @@
 // Shop spec: categories, every item of config/shop.yml (material/amount/name/price lore), buying with each currency,
 // insufficient funds, shift-click, number-key hotbar buying, team colours, enchants, potions.
-// Layout (shop.yml "main page shows the categories in the top row and the Schnellkauf items below them"):
-//   main page     slots 0..n-1 category icons, Schnellkauf items from slot 9
-//   category page slots 0..n-1 category tabs (the open one glows), slot 8 the Schnellkauf button, its items from slot 9
+// Layout (shop.yml "main page shows the categories in the top row and the Quick Buy items below them"):
+//   main page     slots 0..n-1 category icons, Quick Buy items from slot 9
+//   category page slots 0..n-1 category tabs (the open one glows), slot 8 the Quick Buy button, its items from slot 9
 const fs = require('fs')
 const path = require('path')
 const { waitFor, sleep, plain, itemName, legacyText } = require('../harness/bots')
@@ -62,7 +62,7 @@ const lead = s => { const m = String(s == null ? '' : txt(s)).match(/[§&]([0-9a
 const hasAmp = s => /&[0-9a-fk-or]/i.test(String(s || ''))
 const CURRENCY = { // internal key -> display name in the shop + the item SBW hands out from the spawner
   bronze: { label: 'Bronze', item: 'brick', color: 'dark_red' },
-  iron: { label: 'Silber', item: 'iron_ingot', color: 'gray' },
+  iron: { label: 'Iron', item: 'iron_ingot', color: 'gray' },
   gold: { label: 'Gold', item: 'gold_ingot', color: 'gold' }
 }
 const LABEL_TO_KEY = Object.fromEntries(Object.entries(CURRENCY).map(([k, v]) => [v.label, k]))
@@ -73,8 +73,8 @@ const LOOKS = {
   RED: ([r, g, b]) => r > 140 && g < 110 && b < 110, BLUE: ([r, g, b]) => b > 140 && r < 110,
   GREEN: ([r, g, b]) => g > 140 && r < 140 && b < 140, YELLOW: ([r, g, b]) => r > 180 && g > 180 && b < 120
 }
-const PRICE_LABEL = /^(Price|Preis|Kosten):$/i
-const AMOUNT_LABEL = /^(Amount|Menge|Anzahl):$/i
+const PRICE_LABEL = /^Price:$/i
+const AMOUNT_LABEL = /^Amount:$/i
 
 function loadModel () {
   const yml = parseYaml(fs.readFileSync(SHOP_YML, 'utf8'))
@@ -90,7 +90,7 @@ function loadModel () {
     const props = it.properties == null ? [] : Array.isArray(it.properties) ? it.properties : [it.properties]
     return { price: Number(n), res, stack: parseStack(it.stack), colorByTeam: props.includes('applycolorbyteam') }
   }
-  // top-level entries are either categories (with items) or Schnellkauf items (with a price) shown on the main page
+  // top-level entries are either categories (with items) or Quick Buy items (with a price) shown on the main page
   const categories = yml.data.filter(e => e.items).map(cat => ({ icon: parseStack(cat.stack), items: cat.items.map(item) }))
   categories.quick = yml.data.filter(e => e.price != null).map(item)
   return categories
@@ -123,7 +123,7 @@ async function openShop (bot) {
 }
 
 let MODEL = null // set in run(); used to recognise the shop pages
-const QUICK_SLOT = 8 // Schnellkauf button on category pages
+const QUICK_SLOT = 8 // Quick Buy button on category pages
 // plugin/src/shop.ts UNNAMED_BLOCKS: delivered without the shop's display name
 const UNNAMED_BLOCK = id => ['red_sandstone', 'end_stone', 'iron_block', 'glass', 'glowstone', 'chest', 'ladder', 'cobweb'].includes(id) || id.endsWith('_stained_glass')
 const isShopPage = w => !!(w && MODEL && w.slots[0] && w.slots[0].name === MODEL[0].icon.type && w.slots[1] && w.slots[1].name === MODEL[1].icon.type)
@@ -135,7 +135,7 @@ async function showCategories (bot) {
   if (isShopPage(w)) {
     const n = bot._wo.n
     await click(bot, QUICK_SLOT)
-    try { return await waitNewWindow(bot, n, 'main page after Schnellkauf') } catch (e) { /* fall through */ }
+    try { return await waitNewWindow(bot, n, 'main page after Quick Buy') } catch (e) { /* fall through */ }
   }
   return openShop(bot)
 }
@@ -168,8 +168,8 @@ async function buy (bot, slot, { button = 0, mode = 0, settle = 350 } = {}) {
   const msgs = () => bot.chatLog.slice(mark).map(x => x.m)
   let result = 'none'
   try {
-    await waitFor(() => msgs().some(m => /gekauft|nicht genug/i.test(m)), { timeout: 2500, what: 'purchase answer' })
-    result = msgs().some(m => /gekauft/i.test(m)) ? 'bought' : 'denied'
+    await waitFor(() => msgs().some(m => /purchased|not have enough/i.test(m)), { timeout: 2500, what: 'purchase answer' })
+    result = msgs().some(m => /purchased/i.test(m)) ? 'bought' : 'denied'
   } catch (e) { /* none */ }
   await sleep(settle) // lets the companion plugin's next-tick move and the inventory packets arrive
   return { result, msgs: msgs().filter(m => /\[BW\]/.test(m)) }
@@ -251,7 +251,7 @@ module.exports = {
     const dye = team => GLASS[String(map.teams[team].colorName).toUpperCase()] || null
     const glassId = team => (dye(team) ? `${dye(team)[0]}_stained_glass` : null)
     const looksTeam = (team, rgb) => { const f = LOOKS[String(map.teams[team].colorName).toUpperCase()]; return f ? f(rgb) : null }
-    // locate shop items by what they are instead of by index (the Schnellkauf items are not a category)
+    // locate shop items by what they are instead of by index (the Quick Buy items are not a category)
     const locate = (pred, from = 0) => { for (let ci = from; ci < model.length; ci++) { const ii = model[ci].items.findIndex(pred); if (ii >= 0) return { ci, ii, it: model[ci].items[ii] } } return null }
     const byType = (type, res, price) => locate(it => it.stack.type === type && (res == null || it.res === res) && (price == null || it.price === price))
 
@@ -274,7 +274,7 @@ module.exports = {
       for (const key of ['bronze', 'iron', 'gold']) {
         names[key] = await srvB.data(`Inventory[{id:"minecraft:${CURRENCY[key].item}"}].components."minecraft:custom_name".extra[0].text`)
       }
-      t.check('spawner items carry the resource names Bronze / Silber / Gold', names.bronze === '"Bronze"' && names.iron === '"Silber"' && names.gold === '"Gold"', names)
+      t.check('spawner items carry the resource names Bronze / Iron / Gold', names.bronze === '"Bronze"' && names.iron === '"Iron"' && names.gold === '"Gold"', names)
       await t.server.cmd('tp ShopB ' + standPos(teamB)) // away from the spawners, next to the shop
       await sleep(600)
       // spend real spawner output: one purchase per currency (cheapest item outside the overview that the pickup can pay for)
@@ -302,7 +302,7 @@ module.exports = {
       await buy(b, pageItems(wB)[gl.ii].slot)
       const ownGlass = gd ? await srvB.count(glassId(teamB)) : null
       const otherGlass = dye(teamA) && glassId(teamA) !== glassId(teamB) ? await srvB.count(glassId(teamA)) : 0
-      t.check(`second team (${teamB}): Glas is stained glass in the team colour ${map.teams[teamB].colorName} (shown and bought as ${glassId(teamB)})`, glassOk && (ownGlass == null || ownGlass === gl.it.stack.amount) && otherGlass === 0, { shown: glassItem.name, ownGlass, otherGlass })
+      t.check(`second team (${teamB}): Glass is stained glass in the team colour ${map.teams[teamB].colorName} (shown and bought as ${glassId(teamB)})`, glassOk && (ownGlass == null || ownGlass === gl.it.stack.amount) && otherGlass === 0, { shown: glassItem.name, ownGlass, otherGlass })
       const colourProblems = []
       for (const id of ['leather_helmet', 'leather_leggings', 'leather_boots']) {
         const lt = locate(it => it.stack.type === id)
@@ -323,7 +323,7 @@ module.exports = {
     await sleep(800)
     const w0 = await openShop(a)
     const title = legacyText(a.registry, w0.title)
-    t.check('shop opens (chest GUI, 54 slots, title "Shop - Schnellkauf")', w0.slots.length === 90 && /Shop - Schnellkauf/.test(plain(title)), { title, slots: w0.slots.length })
+    t.check('shop opens (chest GUI, 54 slots, title "Shop - Quick Buy")', w0.slots.length === 90 && /Shop - Quick Buy/.test(plain(title)), { title, slots: w0.slots.length })
 
     // categories in configured order in the top row
     const catItems = model.map((c, i) => ({ slot: i, item: w0.slots[i] })).filter(x => x.item)
@@ -338,7 +338,7 @@ module.exports = {
     })
     t.check('categories appear in configured order with right icons in the top row of the main page', catProblems.length === 0,
       catProblems.length ? catProblems : catItems.map(x => strip(itemName(x.item))).join(' | '))
-    // Schnellkauf items below the categories
+    // Quick Buy items below the categories
     const quick = pageItems(w0)
     const quickProblems = []
     model.quick.forEach((it, i) => {
@@ -347,8 +347,8 @@ module.exports = {
       if (!got) { quickProblems.push(`#${i}: missing ${strip(it.stack.name)}`); return }
       if (got.item.name !== exp || strip(itemName(got.item)) !== strip(it.stack.name) || got.item.count !== it.stack.amount) quickProblems.push(`#${i}: ${got.item.name} x${got.item.count} '${strip(itemName(got.item))}' != ${exp} x${it.stack.amount} '${strip(it.stack.name)}'`)
     })
-    if (quick.length !== model.quick.length) quickProblems.push(`${quick.length} Schnellkauf items shown, ${model.quick.length} configured`)
-    t.check(`the main page shows the ${model.quick.length} Schnellkauf items below the categories`, quickProblems.length === 0, quickProblems.length ? quickProblems : quick.map(x => strip(itemName(x.item))).join(' | '))
+    if (quick.length !== model.quick.length) quickProblems.push(`${quick.length} Quick Buy items shown, ${model.quick.length} configured`)
+    t.check(`the main page shows the ${model.quick.length} Quick Buy items below the categories`, quickProblems.length === 0, quickProblems.length ? quickProblems : quick.map(x => strip(itemName(x.item))).join(' | '))
     const rawAmpCats = catItems.filter(x => hasAmp(itemName(x.item))).map(x => itemName(x.item))
     t.check('category names have colour codes translated (no literal &x)', rawAmpCats.length === 0, rawAmpCats.length ? { literal: rawAmpCats } : 'ok')
 
@@ -357,7 +357,7 @@ module.exports = {
     const presenceProblems = []
     const rawAmpItems = []
     const rawAmpLore = []
-    const englishLabels = new Set()
+    const germanLabels = new Set()
     for (let ci = 0; ci < model.length; ci++) {
       const w = await openCategory(a, ci)
       const items = pageItems(w)
@@ -383,8 +383,7 @@ module.exports = {
         const expPrice = `${it.price} ${CURRENCY[it.res].label}`
         if (priceLine !== expPrice) presenceProblems.push(`${label}: price lore '${priceLine}' != '${expPrice}'`)
         const ai = lore.findIndex(l => AMOUNT_LABEL.test(l))
-        if (pi >= 0 && /^price:?$/i.test(lore[pi])) englishLabels.add(lore[pi])
-        if (ai >= 0 && /^amount:?$/i.test(lore[ai])) englishLabels.add(lore[ai])
+        if (lore.some(l => /^(preis|kosten|menge|anzahl):?$/i.test(l))) germanLabels.add(lore.find(l => /^(preis|kosten|menge|anzahl):?$/i.test(l)))
         if (ai < 0 || lore[ai + 1] !== String(it.stack.amount)) presenceProblems.push(`${label}: amount lore '${ai >= 0 ? lore[ai + 1] : null}' != '${it.stack.amount}'`)
         for (const l of it.stack.lore) if (!lore.includes(strip(l))) presenceProblems.push(`${label}: configured lore line '${strip(l)}' missing`)
       })
@@ -394,16 +393,16 @@ module.exports = {
     t.check('item names have colour codes translated (no literal &x)', rawAmpItems.length === 0,
       rawAmpItems.length ? { count: rawAmpItems.length, examples: rawAmpItems.slice(0, 8) } : 'ok')
 
-    t.check('shop lore labels are German (Preis:/Menge:) like the rest of the UI, not English "Price:"/"Amount:"', englishLabels.size === 0, englishLabels.size ? { english: [...englishLabels], source: 'config/bedwars-config.yml shop item lore (&7Price: / &7Amount:)' } : 'ok')
+    t.check('shop lore labels are English (Price:/Amount:) like the rest of the UI, not German "Preis:"/"Menge:"', germanLabels.size === 0, germanLabels.size ? { german: [...germanLabels], source: 'config/bedwars.yml shop-lore' } : 'ok')
 
-    // Schnellkauf button and tabs
+    // Quick Buy button and tabs
     {
       const wc = await openCategory(a, 0)
       const button = wc.slots[QUICK_SLOT]
       const n = a._wo.n
       await click(a, QUICK_SLOT)
       const ok = await waitNewWindow(a, n).then(isMainPage).catch(() => false)
-      t.check('the Schnellkauf button (slot 9) of a category page returns to the main page', !!button && strip(itemName(button)) === 'Schnellkauf' && ok, { button: button && itemName(button) })
+      t.check('the Quick Buy button (slot 9) of a category page returns to the main page', !!button && strip(itemName(button)) === 'Quick Buy' && ok, { button: button && itemName(button) })
       const w1 = isShopPage(await openCategory(a, 0)) // (mineflayer empties a window object once the next one opens)
       const w2 = await openCategory(a, 1)
       const first = pageItems(w2)[0] && strip(itemName(pageItems(w2)[0].item))
@@ -526,7 +525,7 @@ module.exports = {
     const nm = fx => strip(fx.it.stack.name)
     const lab = fx => `${nm(fx)} (${fx.it.price} ${CURRENCY[fx.it.res].label})`
 
-    // German messages: exact wording, no typos, no raw placeholders / colour codes
+    // English messages: exact wording, no typos, no raw placeholders / colour codes
     {
       const fx = FX.end
       await openCategory(a, fx.ci)
@@ -534,10 +533,10 @@ module.exports = {
       const rd = await buy(a, slotOf(fx))
       await fund({ bronze: fx.it.price })
       const rb = await buy(a, slotOf(fx))
-      const expDenied = `[BW] Du hast nicht genug Ressourcen, um ${fx.it.stack.amount}x ${nm(fx)} zu kaufen! Du brauchst ${fx.it.price} ${CURRENCY[fx.it.res].label}!`
-      const expBought = `[BW] ${fx.it.stack.amount}x ${nm(fx)} wurde für ${fx.it.price} ${CURRENCY[fx.it.res].label} gekauft!`
-      t.check('refusal message is the exact German text without typos (Ressourcen) and with the right price', rd.msgs.map(strip).join('|') === expDenied, { got: rd.msgs, expected: expDenied })
-      t.check('purchase message is the exact German text with item name, amount, price and currency', rb.msgs.map(strip).join('|') === expBought, { got: rb.msgs, expected: expBought })
+      const expDenied = `[BW] You do not have enough resources to buy ${fx.it.stack.amount}x ${nm(fx)}! You need ${fx.it.price} ${CURRENCY[fx.it.res].label}!`
+      const expBought = `[BW] You purchased ${fx.it.stack.amount}x ${nm(fx)} for ${fx.it.price} ${CURRENCY[fx.it.res].label}!`
+      t.check('refusal message is the exact English text without typos (resources) and with the right price', rd.msgs.map(strip).join('|') === expDenied, { got: rd.msgs, expected: expDenied })
+      t.check('purchase message is the exact English text with item name, amount, price and currency', rb.msgs.map(strip).join('|') === expBought, { got: rb.msgs, expected: expBought })
     }
 
     // insufficient funds: nothing bought, nothing deducted (also with plenty of the WRONG currencies)
@@ -554,7 +553,7 @@ module.exports = {
         const after = await srvA.money(); const has = await itemCount(id)
         const same = JSON.stringify(before) === JSON.stringify(after) && had === has
         for (const m of r.msgs) if (/Resourc|%|&|§/.test(m)) typoMsgs.push(m)
-        const expMsg = `[BW] Du hast nicht genug Ressourcen, um ${fx.it.stack.amount}x ${nm(fx)} zu kaufen! Du brauchst ${fx.it.price} ${CURRENCY[fx.it.res].label}!`
+        const expMsg = `[BW] You do not have enough resources to buy ${fx.it.stack.amount}x ${nm(fx)}! You need ${fx.it.price} ${CURRENCY[fx.it.res].label}!`
         const msgOk = r.msgs.length >= 1 && r.msgs.every(m => strip(m) === expMsg)
         t.check(`insufficient funds${mode ? ' (shift-click)' : ''}: ${lab(fx)} with ${fx.it.price - 1} ${CURRENCY[fx.it.res].label} buys nothing and deducts nothing`, r.result === 'denied' && same && msgOk,
           { result: r.result, before, after, itemBefore: had, itemAfter: has, msgs: r.msgs, expMsg })
@@ -569,7 +568,7 @@ module.exports = {
       const r = await buy(a, slotOf(FX.sand))
       const after = await itemCount(FX.sand.it.stack.type)
       t.check('characterisation: plain minecraft:brick (no resource name) is NOT accepted as Bronze by the shop', r.result === 'denied' && after === 0,
-        { result: r.result, bought: after, msgs: r.msgs, note: 'SBW matches the exact resource ItemStack (name Bronze/Silber/Gold), only spawner-made items work' })
+        { result: r.result, bought: after, msgs: r.msgs, note: 'SBW matches the exact resource ItemStack (name Bronze/Iron/Gold), only spawner-made items work' })
     }
 
     // shift-click: as many as affordable (priced per piece), at most one stack of 64
@@ -736,7 +735,7 @@ module.exports = {
         if (!x || !y) diff.push(`${id}: colour missing (A ${JSON.stringify(x)}, B ${JSON.stringify(y)})`)
         else if (JSON.stringify(x) === JSON.stringify(y)) diff.push(`${id}: both teams get ${JSON.stringify(x)}`)
       }
-      t.check('Rot and Blau leather armour get different colours (helmet, leggings, boots)', diff.length === 0, diff.length ? diff : { A: teamA, B: teamB, rgbs })
+      t.check('Red and Blue leather armour get different colours (helmet, leggings, boots)', diff.length === 0, diff.length ? diff : { A: teamA, B: teamB, rgbs })
     }
 
     // shop.yml loading: no warnings/errors from the plugin about stacks, materials, potions or enchants
